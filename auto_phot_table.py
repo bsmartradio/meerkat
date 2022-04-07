@@ -3,7 +3,6 @@ import numpy as np
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
 from astropy import units as u
-#from astropy.utils.data import get_pkg_data_filename
 from astropy.wcs import WCS
 import math 
 import sys
@@ -18,7 +17,6 @@ import os
 import subprocess
 import shutil
 import argparse
-#from photutils.utils import calc_total_error
 import re
 from multiprocessing.pool import Pool
 import multiprocessing as mp
@@ -57,6 +55,7 @@ def read_folder_list(file):
 #There should be a list of all of them created by auto_bane
 #Currently only looking for isolated vot table, will be adjusted for all vot tables
 
+
 def find_lists(location,vot_location,filename):
 
     #Read in full data cube and the vot table
@@ -67,30 +66,12 @@ def find_lists(location,vot_location,filename):
     back_list=sorted(glob.glob(location+"*Mosaic_chan[0-9][0-9]_bkg.fits"))
     all_lists_check=""
     phot_list=""
-    #for i in dirs:
-        #if 'Mosaic.fits' in i  :
-            #single_mosaic=i
-        #if 'background_list.txt' in i  :
-            #back_list=i
-        #if 'channels_list.txt' in i  :
-            #channels_list=i
-        #if 'comp.vot' in i  :
-            #vot_table=i
-        #if 'phot_list.txt' in i  :
-            #phot_list=i
-        #missing_files=''
-    #for j in dirs_vot:
-        #if filename+'_Mosaic_Mom0_comp.vot' in j  :
-            #vot_table=j
     print(f'Background list file: {back_list}')
     print(f'List of channels file: {channels_list}')
     print(f'Table of values file: {vot_table}')
 
-    #read all of the channels
-    
-    if channels_list ==[] or back_list ==[]or vot_table ==[]:
-        #if single_mosaic == "":
-        #    missing_files=+' single mosaic fits file,'
+    # read all of the channels and debug if missing files
+    if channels_list ==[] or back_list ==[] or vot_table ==[]:
         if channels_list == []:
             missing_files==' channels list file,'
         if back_list == []:
@@ -278,11 +259,8 @@ if all_lists_check == True:
     dirs = os.listdir(location)
     table = read_info(vot_location,name)
     #Need to move this into a def
-    #f = open(location+back_list, "r")
-    #backgrounds=f.read().splitlines()
-    #hdul = fits.open(location+channels[0])
     hdul = fits.open(channels[0])
-    #dimension number is always 14 unless specified otherwise
+    # dimension number is always 14 unless specified otherwise in the config file
     num_dim=14
     w = WCS(hdul[0].header,naxis=2)
     positions = unify_coords(table,w)
@@ -295,13 +273,13 @@ if all_lists_check == True:
     count=0
     last_char_index = location[:-1].rfind("/")
     name=location[last_char_index+1:-1]
+
     for j in range(num_dim):
-        
+
         number_str = str(j+1)
         freq_num='FREQ00'+ number_str.zfill(2)
         chan_check=any(("chan"+"{:02d}".format(j+1)+'.') in string for string in channels)
         if chan_check != False:
-            #This is getting fucked up here
             hdul = fits.open(channels[count])
             freq_list[j]= hdul[0].header['OBSFREQ']
             count=count+1
@@ -313,7 +291,7 @@ if all_lists_check == True:
     channels_to_process=[]
     #Needs to ignore the first two channels as they are not normal channels  
     #just edited location to [i] from [0]. Shouldn't mess things up
-    #Right here check if the photometry tables have been processed
+    # Right here check if the photometry tables have been processed
     for k in range(num_dim):
         channels_to_process,phot_exist=process_channels_check(location,channels,k)
         print(f'Phot exist: {phot_exist} ')
@@ -342,4 +320,4 @@ if all_lists_check == True:
     
         if phot_exist != False:            
             #read in the existing photometry files here
-            print('Cube has already been processed. Photometry table in folder.')
+            print('Cube has already been processed. Photometry tables in folder.')
