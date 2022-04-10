@@ -21,8 +21,13 @@ import re
 from multiprocessing.pool import Pool
 import multiprocessing as mp
 import glob
+import meerMod as meer
 
-
+# This program recieves a folder location and filename of a MeerKAT data cube.
+# Using an existing Aegean point source list, it processes each
+# point source using phoyoutilities aperature photometry, correcting for
+# beam size. The program is inteded to run on machines with at least 32 cores avaliable
+# for multiprocessing to reduce the length of time it takes to process.
 #what needs to be done in this program
 #This program needs to read in a cube (possibly a list of cubes)
 #It then needs to plot the cube and the respective source positions (possibly to a file)
@@ -98,49 +103,40 @@ def read_info(location,name):
     
     return table
 
-def unify_coords(table,w):
-    #This is it get the world coordinate system and also translate the table values to pixel values
-    lon=table.array['lon'].data
-    lat=table.array['lat'].data
-    t=0
-    test_arr=[]
-    for x in lon:
-        test=np.array([lon[t], lat[t]], np.float_)
-        test_arr.append(test)               
-        t=t+1
-    positions=w.wcs_world2pix(test_arr, 2)
-    
-    return positions
-
-def aperture_phot(positions,table,channels,location,channel):
-    #Calculates all of the photometry for each aperture. Current issue is there is overlap which is not dealt with
+def aperture_phot(positions, channels, vot_location, name, channel):
+    # Calculates all of the photometry for each aperture. Overlapping points are marked
+    # in a seperate program.
     print(channels[channel])
     print(channel)
+    table = read_info(vot_location, name)
     hdul = fits.open(channels[channel])
     print(channels[channel])
-    bck_file =[s for s in backgrounds if "chan"+"{:02d}".format(channel+1)+"_bkg" in s]
-    rms_file =re.sub('_bkg.fits$', '', bck_file[0])+'_rms.fits'
+    bck_file = [s for s in backgrounds if "chan" + "{:02d}".format(channel + 1) + "_bkg" in s]
+    rms_file = re.sub('_bkg.fits$', '', bck_file[0]) + '_rms.fits'
     hdul_bck = fits.open(bck_file[0])
     hdul_rms = fits.open(rms_file)
-    
-    axis_coord_inc=4.166667E-04
-    a_pix=table.array['a'].data*0.000277778/axis_coord_inc
-    b_pix=table.array['b'].data*0.000277778/axis_coord_inc
-    pa=table.array['pa'].data
+
+    axis_coord_inc = 4.166667E-04
+    a_pix = table.array['a'].data * 0.000277778 / axis_coord_inc
+    b_pix = table.array['b'].data * 0.000277778 / axis_coord_inc
+    pa = table.array['pa'].data
     for i in range(len(positions)):
-            
-        apertures=EllipticalAperture(positions[i], a_pix[i], b_pix[i], pa[i])
-            
-        if i == 0:   
-            print(f'Processing channel {channel+1} photometry')
-            phot_table = aperture_photometry(hdul[0].data[:,:]-hdul_bck[0].data, apertures,error=hdul_rms[0].data[:,:]) 
-        else:  
-            temp_table = aperture_photometry(hdul[0].data[:,:], apertures,error=hdul_rms[0].data[:,:])
-            phot_table.add_row([temp_table['id'], temp_table['xcenter'],temp_table['ycenter'],temp_table['aperture_sum'],temp_table['aperture_sum_err']])         
-            
-        
-    np.save(location+'phot_table_chan'+"{:02d}".format(channel+1), phot_table, allow_pickle=True, fix_imports=True) 
-    finished=f"Channel {channel+1} processed"
+
+        apertures = EllipticalAperture(positions[i], a_pix[i], b_pix[i], pa[i])
+
+        if i == 0:
+            print(f'Processing channel {channel + 1} photometry')
+            phot_table = aperture_photometry(hdul[0].data[:, :] - hdul_bck[0].data, apertures,
+                                             error=hdul_rms[0].data[:, :])
+        else:
+            temp_table = aperture_photometry(hdul[0].data[:, :], apertures, error=hdul_rms[0].data[:, :])
+            phot_table.add_row(
+                [temp_table['id'], temp_table['xcenter'], temp_table['ycenter'], temp_table['aperture_sum'],
+                 temp_table['aperture_sum_err']])
+
+    np.save(location + 'phot_table_chan' + "{:02d}".format(channel + 1), phot_table, allow_pickle=True,
+            fix_imports=True)
+    finished = f"Channel {channel + 1} processed"
     return finished
 
 def error_calc(table,hdul,hdul_rms,channel):
@@ -161,10 +157,11 @@ def process_channels_check(location,channels,k):
     
     phot_exist=os.path.isfile(location+'phot_list.txt')
     existing_channels=[]
+
     if phot_exist == False:
-        #I need to add a skip here
-        #Everything below here needs to be in a single function thrown into multiprocessing.
+
         bck_file=" "
+        print("Phot List doesn't yet exist.")
         #Checks if any channels have been removed and ignores them
         chan_check=any(("chan"+"{:02d}".format(k+1)+'.') in string for string in channels)
         print("Does chan"+"{:02d}".format(k+1)+' exist?')
@@ -209,115 +206,118 @@ def process_channels_check(location,channels,k):
     else:
         print(f"Skipping folder {x} due to missing files")
 
-    print(phot_exist)
+    print("Printing existing channels")
+    print(existing_channels)
     
     return existing_channels, phot_exist
 
-def combine_table(current_location,shape):
+
+def combine_table(current_location, shape):
+
     dirs = os.listdir(current_location)
     full_phot=np.full([2,num_dim,shape], float('Nan'))
     freq_list=np.full([num_dim], float('Nan')) 
     
     for k in range(num_dim):   
         if 'phot_table_chan'+"{:02d}".format(k+1)+'.dat.npy' in dirs:
-            phot_table =np.load(current_location+'phot_table_chan'+"{:02d}".format(k+1)+'.dat.npy')
-            full_phot[0,k,:]=phot_table['aperture_sum']
-            full_phot[1,k,:]=phot_table['aperture_sum_err']
+            phot_table = np.load(current_location+'phot_table_chan'+"{:02d}".format(k+1)+'.dat.npy')
+            full_phot[0,k,:] = phot_table['aperture_sum']
+            full_phot[1,k,:] = phot_table['aperture_sum_err']
     return full_phot
 
-#vot_location='/Volumes/200GB/MeerKAT/G005.5+0.0IFx/'
 
-#Read in file name argument.
-parser = argparse.ArgumentParser(description='Must have folder location')
-parser.add_argument("--folder_loc")
+if __name__ == "__main__":
+    #Read in file name argument.
+    parser = argparse.ArgumentParser(description='Must have folder location')
+    parser.add_argument("--folder_loc")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.folder_loc  == None :
-    print("Must have folder location. Please include --folder_loc='filepath/filename'")
-    exit()
-location = args.folder_loc
+    if args.folder_loc  == None :
+        print("Must have folder location. Please include --folder_loc='filepath/filename'")
+        exit()
+    location = args.folder_loc
 
-#Read in vot location argument
+    #Read in vot location argument
 
-last_char_index = location[:-1].rfind("/")
-name=location[last_char_index+1:-1]
-vot_cat_index=location[:last_char_index-1].rfind("/")
-vot_location=location[:vot_cat_index+1]+'Mom0_comp_catalogs/'
-print(location)
-print(vot_location)
-fileslist = os.listdir(location.strip())
-
-#Get all the info for the specific mosaic locations
-channels, backgrounds, vot_table, all_lists_check=find_lists(location,vot_location,name)
-    
-if all_lists_check == True: 
-    
-    print(channels[0])
-    
-    #Read in the table and load in all channels
-    dirs = os.listdir(location)
-    table = read_info(vot_location,name)
-    #Need to move this into a def
-    hdul = fits.open(channels[0])
-    # dimension number is always 14 unless specified otherwise in the config file
-    num_dim=14
-    w = WCS(hdul[0].header,naxis=2)
-    positions = unify_coords(table,w)
-    shape=len(table.array)
-    #Full array of apertures 
-    app_list=np.full([num_dim,shape], float('Nan'))
-    err_list=np.full([num_dim,shape], float('Nan'))
-    #List of frequencies
-    freq_list=np.full([num_dim], float('Nan'))   
-    count=0
     last_char_index = location[:-1].rfind("/")
     name=location[last_char_index+1:-1]
+    vot_cat_index=location[:last_char_index-1].rfind("/")
+    vot_location=location[:vot_cat_index+1]+'Mom0_comp_catalogs/'
+    print(location)
+    print(vot_location)
+    fileslist = os.listdir(location.strip())
 
-    for j in range(num_dim):
+    #Get all the info for the specific mosaic locations
+    channels, backgrounds, vot_table, all_lists_check = find_lists(location, vot_location, name)
+        
+    if all_lists_check == True: 
+        
+        print(channels[0])
+        
+        #Read in the table and load in all channels
+        dirs = os.listdir(location)
+        table = read_info(vot_location,name)
+        #Need to move this into a def
+        hdul = fits.open(channels[0])
+        # dimension number is always 14 unless specified otherwise in the config file
+        num_dim=14
+        w = WCS(hdul[0].header,naxis=2)
+        positions = meer.unify_coords(table,w)
+        shape=len(table.array)
+        #Full array of apertures 
+        app_list=np.full([num_dim,shape], float('Nan'))
+        err_list=np.full([num_dim,shape], float('Nan'))
+        #List of frequencies
+        freq_list=np.full([num_dim], float('Nan'))   
+        count=0
+        last_char_index = location[:-1].rfind("/")
+        name=location[last_char_index+1:-1]
 
-        number_str = str(j+1)
-        freq_num='FREQ00'+ number_str.zfill(2)
-        chan_check=any(("chan"+"{:02d}".format(j+1)+'.') in string for string in channels)
-        if chan_check != False:
-            hdul = fits.open(channels[count])
-            freq_list[j]= hdul[0].header['OBSFREQ']
-            count=count+1
-            
-    #Save the frequency list from the headers. Could split the whole frequency bit into its own program
-    if not name+'freq_list' in dirs:
-        np.save(location+name+'_freq_list', freq_list, allow_pickle=True, fix_imports=True) 
+        for j in range(num_dim):
 
-    channels_to_process=[]
-    #Needs to ignore the first two channels as they are not normal channels  
-    #just edited location to [i] from [0]. Shouldn't mess things up
-    # Right here check if the photometry tables have been processed
-    for k in range(num_dim):
-        channels_to_process,phot_exist=process_channels_check(location,channels,k)
-        print(f'Phot exist: {phot_exist} ')
-        if phot_exist == False:
-            print(f'Processing Channel {channels_to_process}')
-            processes=[mp.Process(target=aperture_phot, args=(positions, table,channels,location,x)) for x in channels_to_process]
-            # Run processes
-            for p in processes:
-                p.start()
-
-            # Exit the completed processes
-            for p in processes:
-                p.join()
-
-            phot_list=[]
-
-            for line in dirs:
+            number_str = str(j+1)
+            freq_num='FREQ00'+ number_str.zfill(2)
+            chan_check=any(("chan"+"{:02d}".format(j+1)+'.') in string for string in channels)
+            if chan_check != False:
+                hdul = fits.open(channels[count])
+                freq_list[j]= hdul[0].header['OBSFREQ']
+                count=count+1
                 
-                if 'phot_table_chan' in line:
-                    phot_list.append(line)
-            if phot_list:
-                with open(location+'phot_list.txt', 'w') as f:
-                    for k in phot_list:
-                        f.writelines(k)
-                        f.writelines("\n")
-    
-        if phot_exist != False:            
-            #read in the existing photometry files here
-            print('Cube has already been processed. Photometry tables in folder.')
+        #Save the frequency list from the headers. Could split the whole frequency bit into its own program
+        if not name+'freq_list' in dirs:
+            np.save(location+name+'_freq_list', freq_list, allow_pickle=True, fix_imports=True) 
+
+        channels_to_process=[]
+        #Needs to ignore the first two channels as they are not normal channels  
+        #just edited location to [i] from [0]. Shouldn't mess things up
+        # Right here check if the photometry tables have been processed
+        for k in range(num_dim):
+            channels_to_process, phot_exist = process_channels_check(location, channels,k)
+            print(f'Does Phot exist: {phot_exist} ')
+            if phot_exist == False:
+                print(channels_to_process)
+                pool = mp.Pool()
+                func = partial(aperture_phot, positions, channels, vot_location, name)
+
+                pool.map(func, channels_to_process)
+                pool.close()
+                pool.join()
+
+                phot_list = []
+
+                dirs = os.listdir(location)
+
+                for line in dirs:
+
+                    if 'phot_table_chan' in line:
+                        phot_list.append(line)
+                if phot_list:
+                    with open(location + 'phot_list.txt', 'w') as f:
+                        for k in phot_list:
+                            f.writelines(k)
+                            f.writelines("\n")
+
+                if phot_exist != False:
+                    # read in the existing photometry files here
+                    print('Cube has already been processed. Photometry tables in folder.')

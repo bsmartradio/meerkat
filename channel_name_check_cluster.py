@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[90]:
-
-
 from astropy.io import fits
 import os
 import subprocess
@@ -22,17 +16,13 @@ def read_folder_list(file):
     f.close() 
 
     return folder_loc
-    
-    
+
 
 def find_files(location):
 
     dirs = os.listdir(location)
         
     return dirs
-
-
-# In[91]:
 
 
 def check_filenames(dirs,loc):
@@ -46,11 +36,6 @@ def check_filenames(dirs,loc):
                 new_filename=new_filename.replace(("chan"+"{:01d}".format(chan_num+1)+'.'), ("chan"+"{:02d}".format(chan_num+1)+'.'), 1)
                 os.rename(loc+file,new_filename)
                 print(new_filename.replace(("chan"+"{:01d}".format(chan_num+1)+'.'), ("chan"+"{:02d}".format(chan_num+1)+'.'), 1))
-
-
-#location=read_folder_list('/d/MeerKAT/folder_list.text')
-
-#Read in file name argument.
 
 
 def file_check(folder_location):
