@@ -1,28 +1,17 @@
 from astropy.io.votable import parse
 from functools import partial
-import numpy as np
-from astropy.io import fits
-from astropy.coordinates import SkyCoord
-from astropy import units as u
 from astropy.wcs import WCS
-import math
-import sys
-from astropy.coordinates import Angle
-from regions import PixCoord, EllipsePixelRegion, EllipseSkyRegion
 import numpy as np
 from photutils import aperture_photometry
-from photutils import EllipticalAperture, SkyEllipticalAperture, SkyCircularAperture
-import time
+from photutils import EllipticalAperture
 from astropy.io import fits
 import os
-import subprocess
-import shutil
 import argparse
 import re
-from multiprocessing.pool import Pool
 import multiprocessing as mp
 import glob
-import meerMod as meer
+from common import data_helper as meer
+
 
 def read_folder_list(file):
     # Read in full data cubes and the vot tables
