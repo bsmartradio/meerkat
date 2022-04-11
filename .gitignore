@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+G279.5-0.5IFx/
+
+G285.5-0.5IFx/
+
+.idea/
