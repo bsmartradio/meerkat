@@ -1,10 +1,9 @@
-from astropy.io import fits
 import os
 import subprocess
-import shutil
 import argparse
 import re
-import meerMod
+from common import data_helper
+
 
 #This program is to read in a list of Meerkat moasaic files and split them down each plane, then get the bane files
 #This program looks for seperate folders (G330, G331 etc etc) that contain only files for that particular cube and its channel files.
