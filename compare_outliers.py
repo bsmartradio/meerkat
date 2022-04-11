@@ -1,25 +1,25 @@
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
-import math
 import argparse
 from numpy.linalg import norm
 from astropy.io import fits
-from matplotlib.colors import LogNorm
-from matplotlib.backends.backend_pdf import PdfPages
-from meerMod import *
+from common import data_helper as meer
 from astropy.wcs import WCS
-from astropy.io.votable.tree import VOTableFile, Resource, Table, Field
-from astropy.table import QTable, Table, Column
+from astropy.io.votable.tree import Table
+from astropy.table import Table
 
 
 #The purpose of this program is to take neighboring cubes from MeerKAT and the Aegean 
 #source catalogues and identify overlapping sources, then check how well the sources
 #match each other positionally and how close their photometry output is
 
-#A catalogue of matching points is made, then a table of how well each channel matches is created
-
-#Possibly need to split this program into two seperate ones?????
+# A catalogue of matching points is made, then a table of how well each channel matches is created
+# Input - The input requires the location of the Mosaic Planes. If using the standard file structure,
+# the files will be location in Mosaic_Planes.
+# It then requires the names of 3 different cubes to be compared.
+# Generally, when used in the pipelines, the cubes will be read in via the jobSubmitter_Compare.py,
+# however it is possible to use induvidually as long as three neighboring cubes are provided.
 
 def find_neighbor(location,folder):
     glob.glob(location+"phot_table*.npy")
@@ -108,19 +108,19 @@ def get_phot(name,folder):
     return phot_table
 
 #This unify coordiantes is not the same as the one in meerMod, need to unify, lol
-def unify_coords(table,w):
+#def unify_coords(table,w):
     #This is it get the world coordinate system and also translate the table values to pixel values
-    lon=table['lon'].data
-    lat=table['lat'].data
-    t=0
-    test_arr=[]
-    for x in lon:
-        test=np.array([lon[t], lat[t]], np.float_)
-        test_arr.append(test)               
-        t=t+1
-    positions=w.wcs_world2pix(test_arr, 2)
+    #    lon=table['lon'].data
+    #lat=table['lat'].data
+    #t=0
+    #test_arr=[]
+    #for x in lon:
+    #    test=np.array([lon[t], lat[t]], np.float_)
+    #    test_arr.append(test)
+    #    t=t+1
+    #positions=w.wcs_world2pix(test_arr, 2)
     
-    return positions
+    #return positions
 
 def coords_table(cube,cubeNames,table):
     positions=[]
@@ -128,7 +128,7 @@ def coords_table(cube,cubeNames,table):
     for num, name in enumerate(cubeNames):
         hdul = fits.open(cube[num]+cubeNames[num]+"_Mosaic_chan01.fits")
         w = WCS(hdul[0].header,naxis=2)
-        positions[num:]= [unify_coords(table[num],w)]
+        positions[num:]= [meer.unify_coords(table[num],w)]
     return positions
 
 def make_table(shape):
@@ -154,8 +154,7 @@ def make_table(shape):
     full_table = Table(data=np.zeros(shape, dtype=dtype))
     return full_table
 
-location='/beegfs/car/bsmart/MeerKAT/Mosaic_Planes/'
-#location='/d/MeerKAT/Test/'
+location='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
 
 parser = argparse.ArgumentParser(description='Must have folder location')
 parser.add_argument("--file_one")
@@ -187,7 +186,7 @@ for k in folder:
     name=get_name(k)
     names.append(get_name(k))
 
-vot_folder='/beegfs/car/bsmart/MeerKAT/Mom0_comp_catalogs'    
+vot_folder='/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs'
     
 # Load in all the relevant files here
 vot_list=load_neighbors(names,vot_folder)

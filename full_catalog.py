@@ -1,12 +1,5 @@
 #ALL of the aegean id files and concat them together, same with the photometry files.
-
-
-import numpy as np
 import glob
-from astropy.io.votable.tree import VOTableFile, Resource, Table, Field
-from astropy.table import QTable, Table, Column
-from meerMod import *
-from astropy.io.votable import parse_single_table
 
 def get_vots(location):
     
@@ -81,27 +74,27 @@ def make_table(shape, aegean=False, table_type=[]):
     
     
     
-vot_location='/beegfs/car/bsmart/MeerKAT/Mom0_comp_catalogs/'
-phot_location='/beegfs/car/bsmart/MeerKAT/Mosaic_Planes/'
+vot_location='/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/'
+phot_location='/Users/bs19aam/Documents/test_data//Mosaic_Planes/'
 
-#full_table=get_phots(phot_location)
+full_table=get_phots(phot_location)
 
-#for i in range(14):
-#    for j in range(len(full_table)):
-#        if full_table["chan"+"{:02d}".format(i+1)][j] == 0:
-#            full_table["chan"+"{:02d}".format(i+1)][j]=np.nan
+for i in range(14):
+    for j in range(len(full_table)):
+        if full_table["chan"+"{:02d}".format(i+1)][j] == 0:
+            full_table["chan"+"{:02d}".format(i+1)][j]=np.nan
             
-#for i in range(14):
-#    for j in range(len(full_table)):
-#        if full_table["si_point_num"][j] == -2147483648:
-#            full_table["si_point_num"][j]=np.nan
+for i in range(14):
+    for j in range(len(full_table)):
+        if full_table["si_point_num"][j] == -2147483648:
+            full_table["si_point_num"][j]=np.nan
             
-#for i in range(14):
-#    for j in range(len(full_table)):
-#        if full_table["overlap"][j] == 1:
-#            full_table["overlap"][j]=np.nan
+for i in range(14):
+    for j in range(len(full_table)):
+        if full_table["overlap"][j] == 1:
+            full_table["overlap"][j]=np.nan
 
-#full_table.write(f'{phot_location}MeerKAT_full_phot_catalog.vot', format='votable',overwrite=True)
+full_table.write(f'{phot_location}MeerKAT_full_phot_catalog.vot', format='votable',overwrite=True)
 
 full_table_vot=get_vots(vot_location)
 

@@ -1,10 +1,9 @@
-from astropy.io.votable import parse
-from astropy.io.votable.tree import VOTableFile, Resource, Table, Field
-from meerMod import *
+from astropy.io.votable.tree import Table
+from common import data_helper as meer
 import numpy as np
-from astropy.table import QTable, Table, Column
+from astropy.table import Table
 import glob
-from astropy.io.votable import from_table, writeto
+
 
 # The purpose of this program is gather all the vot files for
 # both aegean and for the photometry tables and
@@ -58,7 +57,7 @@ def make_table(shape, aegean=False, table_type=[]):
 
 def assign(num, table_name, aegean=False):
 
-    table = read_info(table_name)
+    table = meer.read_info(table_name)
     table.mask = False
 
     if aegean:
@@ -81,7 +80,7 @@ def assign(num, table_name, aegean=False):
     print(labeled_table['id'][0])
 
     if aegean:
-        image_name = get_name(table_name)
+        image_name = meer.get_name(table_name)
         labeled_table['field'] = image_name
         labeled_table.write(f'{table_name}+id', format='votable', overwrite=True)
         print('Aegean Files')
@@ -93,26 +92,31 @@ def assign(num, table_name, aegean=False):
     last_id = num+i
     return last_id
 
-location = '/beegfs/car/bsmart/MeerKAT/'
 
-vot_list = get_vot_list(location)
+if __name__ == "__main__":
 
-for i, vot_name in enumerate(vot_list):
+    location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'
+    print('hi')
 
-    if i == 0:
-        last_id = assign(0, vot_name)
-    else:
-        last_id = assign(last_id, vot_name)
+    vot_list = meer.get_vot_list(location)
+    print(vot_list)
 
-    print(last_id)
+    for i, vot_name in enumerate(vot_list):
 
-vot_list = get_vot_list(location, aegean=True)
+        if i == 0:
+            last_id = assign(0, vot_name)
+        else:
+            last_id = assign(last_id, vot_name)
 
-for i, vot_name in enumerate(vot_list):
+        print(last_id)
 
-    if i == 0:
-        last_id = assign(0, vot_name, aegean=True)
-    else:
-        last_id = assign(last_id, vot_name, aegean=True)
+    vot_list = get_vot_list(location, aegean=True)
 
-    print(last_id)
+    for i, vot_name in enumerate(vot_list):
+
+        if i == 0:
+            last_id = assign(0, vot_name, aegean=True)
+        else:
+            last_id = assign(last_id, vot_name, aegean=True)
+
+        print(last_id)
