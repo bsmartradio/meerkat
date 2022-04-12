@@ -1,11 +1,8 @@
 import argparse
 import os
 from functools import partial
-from typing import re
-
-from astropy.units.format import fits
 from photutils import EllipticalAperture, aperture_photometry
-from photutils.utils import calc_total_error
+
 
 import common.image as image
 import common.data_helper as helper
@@ -45,20 +42,6 @@ def aperture_phot(path, channel_number):
     return finished
 
 
-def combine_table(current_location, shape):
-    dirs = os.listdir(current_location)
-    full_phot = np.full([2, total_channels, shape], float('Nan'))
-    freq_list = np.full([total_channels], float('Nan'))
-
-    for k in range(total_channels):
-        if 'phot_table_chan' + "{:02d}".format(k + 1) + '.dat.npy' in dirs:
-            phot_table = np.load(current_location + 'phot_table_chan' + "{:02d}".format(k + 1) + '.dat.npy')
-            full_phot[0, k, :] = phot_table['aperture_sum']
-            full_phot[1, k, :] = phot_table['aperture_sum_err']
-    return full_phot
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Must have folder location')
     parser.add_argument("--folder_loc")
@@ -104,6 +87,5 @@ if __name__ == '__main__':
                         f.writelines(k)
                         f.writelines("\n")
 
-        # if phot_exist != False:
-        # read in the existing photometry files here
-        #   print('Cube has already been processed. Photometry tables in folder.')
+        if phot_exist != False:
+            print('Cube has already been processed. Photometry tables in folder.')
