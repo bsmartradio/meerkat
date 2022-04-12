@@ -1,6 +1,10 @@
+import glob
 import os
 import common.data_helper as helper
 import numpy as np
+
+from common.data_helper import get_name, get_vot_location
+
 
 def file_check(location):
     channels = helper.find_files(location)
@@ -19,6 +23,7 @@ def check_filenames(channels, location):
                 os.rename(location + single_channel, new_filename)
                 print(new_filename.replace(("chan" + "{:01d}".format(chan_num + 1) + '.'),
                                            ("chan" + "{:02d}".format(chan_num + 1) + '.'), 1))
+
 
 def process_channels_check(location, channels, total_channels, backgrounds):
     phot_exist = os.path.isfile(location + 'phot_list.txt')
@@ -40,24 +45,53 @@ def process_channels_check(location, channels, total_channels, backgrounds):
                 bck_file = [s for s in backgrounds if "chan" + "{:02d}".format(k + 1) + "_bkg" in s]
 
                 if check_values == False and bck_file != " ":
-                    # Load in the background fits files
                     existing_channels.append(k)
                     print('Channel ', k + 1, ' has values and valid background, will process photometry')
-                    print(existing_channels)
 
                 elif bck_file == " " and check_values != False:
-                    print('Missing background file for ', k + 1, ' channel. Run auto_bane to make file')
-
+                    print('Missing background file for ', k + 1, ' channel. Run auto_bane to make file.')
+                    print(f"Skipping file {location} due to missing files")
                 else:
-                    print('No values for ', k + 1, ' channel')
+                    print('No values for ', k + 1, ' channel and missing background file. Run auto_bane to make file.')
+                    print(f"Skipping file {location} due to no values")
             else:
-                print('No values for ', k + 1, ' channel')
+                print('Channel does not exist. Please check if all fits files are present.')
 
-        elif phot_exist != False:
-            print('Photometry file exists for ' + location + 'and was skipped. To re-run, remove phot_list from directory.')
+        elif phot_exist != False and k == 13 and len(channel_exists_check) == 14:
+            print(
+                'Photometry file exists for ' + location + 'and was skipped. To re-run, remove phot_list from directory.')
             exit()
-        else:
-            print(f"Skipping folder {location} due to missing files")
-
 
     return existing_channels, phot_exist
+
+
+def check_lists(location):
+    # Read in full data cube and the vot table
+    name = helper.get_name(location)
+    vot_location = helper.get_vot_location(location)
+    channels_list = sorted(glob.glob(location + "/*Mosaic_chan[0-9][0-9].fits"))
+    vot_table = sorted(glob.glob(vot_location + name + '_Mosaic_Mom0_comp.vot'))
+    back_list = sorted(glob.glob(location + "/*Mosaic_chan[0-9][0-9]_bkg.fits"))
+    print(f'Background list file: {back_list}')
+    print(f'List of channels file: {channels_list}')
+    print(f'Table of values file: {vot_table}')
+
+    # read all the channels and debug if missing files
+    if channels_list == [] or back_list == [] or vot_table == []:
+        missing_files = ''
+        if not channels_list:
+            missing_files = ' channels list file,'
+        if not back_list:
+            missing_files = 'background list file, '
+        if not vot_table:
+            missing_files = 'aegean vot tables file,'
+        print(
+            'You are missing ' + missing_files + '. Please make sure you have run auto_bane first and all files are '
+                                                 'in the same folder.')
+        all_lists_check = False
+        channels = ""
+    else:
+        all_lists_check = True
+        print('All lists found. Processing photometry.')
+
+    return all_lists_check

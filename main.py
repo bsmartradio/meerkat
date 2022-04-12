@@ -3,7 +3,7 @@ import os
 from functools import partial
 from photutils import EllipticalAperture, aperture_photometry
 
-
+import common.data_checks as checks
 import common.image as image
 import common.data_helper as helper
 import common.data_checks as checks
@@ -54,38 +54,40 @@ if __name__ == '__main__':
 
     path = args.folder_loc
 
-    # Get all the info for the specific mosaic locations
-    channels, backgrounds, vot_table, all_lists_check = helper.find_lists(path)
+    # Check if the required files are present, if not exits program and prints advisories.
+    all_lists_check = checks.check_lists(path)
 
     if all_lists_check:
         # Constructs the data cube for the specific MeerKAT data, gathering the individual channel data,
         # the background information, and the rms data
         data_cube = image.Image(path)
         total_channels = len(data_cube.channels)
+        # Checks if any of the files have been processed. If some but not all have, only runs photometry on
+        # the channels missing files.
         channels_to_process, phot_exist = checks.process_channels_check(path, data_cube.channels, total_channels,
-                                                                        backgrounds)
+                                                                        data_cube.backgrounds.name)
         print(f'Does Phot exist: {phot_exist} ')
         if not phot_exist:
             pool = mp.Pool()
             func = partial(aperture_phot, path)
-            print('Hi')
             pool.map(func, channels_to_process)
             pool.close()
             pool.join()
-    print('end')
-    phot_list = []
 
-    dirs = os.listdir(path)
+        # Creates a text file containing all of the photometry for quick reference
+        phot_list = []
 
-    for line in dirs:
+        dirs = os.listdir(path)
 
-        if 'phot_table_chan' in line:
-            phot_list.append(line)
-            if phot_list:
-                with open(path + 'phot_list.txt', 'w') as f:
-                    for k in phot_list:
-                        f.writelines(k)
-                        f.writelines("\n")
+        for line in dirs:
+
+            if 'phot_table_chan' in line:
+                phot_list.append(line)
+                if phot_list:
+                    with open(path + 'phot_list.txt', 'w') as f:
+                        for k in phot_list:
+                            f.writelines(k)
+                            f.writelines("\n")
 
         if phot_exist != False:
-            print('Cube has already been processed. Photometry tables in folder.')
+            print('Cube has already been fully processed. Photometry tables in folder.')
