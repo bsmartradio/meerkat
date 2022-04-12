@@ -6,8 +6,7 @@ import numpy as np
 
 
 # This data_helper contains a number of short functions that are used across
-# a number of MeerKAT processes. Many of them assume a standard
-# file structure and MeerKAT data labeling.
+# a number of MeerKAT processes. Many of them assume a standard file structure and MeerKAT data labeling.
 
 def get_name(location):
     print(location)
@@ -24,6 +23,13 @@ def get_name(location):
     return name
 
 
+def find_backgrounds(location, background= False, rms = False):
+    if background is True:
+        found_list = sorted(glob.glob(location + "*[0-9][0-9]_bkg*"))
+    if rms is True:
+        found_list = sorted(glob.glob(location + "*[0-9][0-9]_rms*"))
+    return found_list
+
 def get_list(location):
     folder_list = sorted(glob.glob(location + "G[0-9][0-9][0-9]*"))
     return folder_list
@@ -36,8 +42,8 @@ def read_info(vot_location):
 
     return data
 
-
 def get_image(image_name):
+
     fits_file = fits.open(image_name)
     image_data = fits_file[0].data
     hdr = fits_file[0].header

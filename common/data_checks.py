@@ -36,7 +36,7 @@ def process_channels_check(location, channels, total_channels, backgrounds):
 
                 # Need to check if these are empty files
                 print('Checking for channels with only nan values and valid background files')
-                check_values = np.isnan(channels[k].image_data[:, :]).all()
+                check_values = np.isnan(channels[k].data[:, :]).all()
                 bck_file = [s for s in backgrounds if "chan" + "{:02d}".format(k + 1) + "_bkg" in s]
 
                 if check_values == False and bck_file != " ":
