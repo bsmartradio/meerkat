@@ -41,6 +41,7 @@ def get_list(location):
 
 
 def read_info(vot_location):
+    print('hi')
     votable = parse(vot_location)
     table = votable.get_first_table()
     data = table.array
@@ -81,6 +82,9 @@ def minmax_coord(header):
 
 
 def find_channels(location):
+
+    if location[-1] != '/':
+        location = location + '/'
     channels = sorted(glob.glob(location + "*[0-9].fits"))
 
     return channels
@@ -97,7 +101,7 @@ def get_vot_list(location, aegean=False):
 
 def get_vot_location(location):
     folder_name=get_name(location)
-    upper_folder = location[0:-len(folder_name) - 2].rfind("/")
+    upper_folder = location[0:-len(folder_name)-1].rfind("/")
     vot_location = location[0:upper_folder] + '/Mom0_comp_catalogs/'
 
     return vot_location

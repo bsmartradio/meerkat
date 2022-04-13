@@ -17,12 +17,13 @@ import common.image as image
 import common.data_checks as checks
 import multiprocessing as mp
 import numpy as np
-import common.data_helper as helper
+import logging
+from app_logging import logger
 
 
 def aperture_phot(path, channel_number):
     # Calculates all the photometry for each aperture. Overlapping points are marked
-    # in a separate program.
+    # in a compare_neighbors
     start = time.time()
     data_cube = image.Image(path, single_channel=channel_number)
     axis_coord_inc = 4.166667E-04
@@ -36,18 +37,6 @@ def aperture_phot(path, channel_number):
     phot_table = [aperture_photometry(data_cube.channels[channel_number].data[:, :] - data_cube.background[channel_number].data[:, :],
                    apert, error=data_cube.rms[channel_number].data[:, :]) for apert in apertures]
 
-        # if i == 0:
-            # print(f'Processing channel {channel_number + 1} photometry')
-            # phot_table = aperture_photometry(data_cube.channels[channel_number].data[:, :] -
-                                             # data_cube.background[channel_number].data[:, :], apertures,
-                                             # error=data_cube.rms[channel_number].data[:, :])
-    # else:
-            # temp_table = aperture_photometry(data_cube.channels[channel_number].data[:, :] -
-                                             # data_cube.background[channel_number].data[:, :], apertures,
-                                             # error=data_cube.rms[channel_number].data[:, :])
-            # phot_table.add_row([temp_table['id'], temp_table['xcenter'], temp_table['ycenter'],
-                                # temp_table['aperture_sum'], temp_table['aperture_sum_err']])
-
     np.save(data_cube.location + 'phot_table_chan' + "{:02d}".format(channel_number + 1), phot_table,
             allow_pickle=True, fix_imports=True)
     end = time.time()
@@ -57,6 +46,9 @@ def aperture_phot(path, channel_number):
     return finished
 
 if __name__ == '__main__':
+
+    logger.init(logging.DEBUG, '.', 'app_logging')
+
     parser = argparse.ArgumentParser(description='Must have folder location')
     parser.add_argument("--folder_loc")
 

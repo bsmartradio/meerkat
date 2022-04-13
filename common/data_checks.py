@@ -41,21 +41,21 @@ def process_channels_check(location, channels, total_channels, backgrounds):
                 check_values = np.isnan(channels[k].data[:, :]).all()
                 bck_file = [s for s in backgrounds if "chan" + "{:02d}".format(k + 1) + "_bkg" in s]
 
-                if check_values == False and bck_file != " ":
+                if check_values is False and bck_file != " ":
                     existing_channels.append(k)
                     print('Channel ', k + 1, ' has values and valid background, will process photometry')
 
-                elif bck_file == " " and check_values != False:
+                elif bck_file == " " and check_values is not False:
                     print('Missing background file for ', k + 1, ' channel. Run auto_bane to make file.')
                     print(f"Skipping file {location} due to missing files")
-                elif bck_file != " " and check_values != False:
+                elif bck_file != " " and check_values is not False:
                     print('No values for ', k + 1, ' channel')
                 else:
                     print('No values for ', k + 1, ' channel and missing background file. Run auto_bane to make file.')
             else:
                 print('Channel does not exist. Please check if all fits files are present.')
 
-        elif phot_exist != False and k == 13 and len(existing_channels) == 0:
+        elif phot_exist is not False and k == 13 and len(existing_channels) == 0:
             print(
                 'Photometry files exists for ' + location + ' and processing was skipped. To re-run, remove phot_list '
                                                             'from directory.')
@@ -88,12 +88,13 @@ def check_lists(location):
             'You are missing ' + missing_files + '. Please make sure you have run auto_bane first and all files are '
                                                  'in the same folder.')
         all_lists_check = False
-        channels = ""
+
     else:
         all_lists_check = True
         print('All lists found. Processing photometry.')
 
     return all_lists_check, back_list, channels_list
 
-def bane_check(location):
 
+def bane_check(location):
+    print('hi')
