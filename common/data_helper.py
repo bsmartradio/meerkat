@@ -77,7 +77,7 @@ def minmax_coord(header):
     return min_lon.l.degree, max_lon.l.degree
 
 
-def find_files(location):
+def find_channels(location):
     channels = sorted(glob.glob(location + "*[0-9].fits"))
 
     return channels

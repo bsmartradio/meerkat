@@ -3,11 +3,9 @@ import os
 import common.data_helper as helper
 import numpy as np
 
-from common.data_helper import get_name, get_vot_location
-
 
 def file_check(location):
-    channels = helper.find_files(location)
+    channels = helper.find_channels(location)
     check_filenames(channels, location)
     print(f"Channel name check has been run for cube {location}")
 
@@ -30,10 +28,9 @@ def process_channels_check(location, channels, total_channels, backgrounds):
     existing_channels = []
 
     for k in range(total_channels):
-        if phot_exist == False:
+        if not phot_exist:
 
             # Checks if any channels have been removed and ignores them
-            chan_check = None
             channel_exists_check = channels[k].name.find("chan" + "{:02d}".format(k + 1) + '.')
             print("Does chan" + "{:02d}".format(k + 1) + ' exist?')
 
@@ -51,15 +48,17 @@ def process_channels_check(location, channels, total_channels, backgrounds):
                 elif bck_file == " " and check_values != False:
                     print('Missing background file for ', k + 1, ' channel. Run auto_bane to make file.')
                     print(f"Skipping file {location} due to missing files")
+                elif bck_file != " " and check_values != False:
+                    print('No values for ', k + 1, ' channel')
                 else:
                     print('No values for ', k + 1, ' channel and missing background file. Run auto_bane to make file.')
-                    print(f"Skipping file {location} due to no values")
             else:
                 print('Channel does not exist. Please check if all fits files are present.')
 
-        elif phot_exist != False and k == 13 and len(channel_exists_check) == 14:
+        elif phot_exist != False and k == 13 and len(existing_channels) == 14:
             print(
-                'Photometry file exists for ' + location + 'and was skipped. To re-run, remove phot_list from directory.')
+                'Photometry files exists for ' + location + 'so processing was skipped. To re-run, remove phot_list '
+                                                            'from directory.')
             exit()
 
     return existing_channels, phot_exist
