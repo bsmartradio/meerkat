@@ -1,6 +1,7 @@
 import glob
 from astropy.io import fits
 from astropy.io.votable import parse
+from astropy.io.votable.tree import Table
 from astropy.wcs import WCS
 import numpy as np
 
@@ -41,7 +42,6 @@ def get_list(location):
 
 
 def read_info(vot_location):
-    print('hi')
     votable = parse(vot_location)
     table = votable.get_first_table()
     data = table.array
@@ -115,3 +115,26 @@ def load_neighbors(names, folder):
     vot_list = [vot_left, vot_mid, vot_right]
 
     return vot_list
+
+def make_table(shape):
+    dtype = [('id', 'int32'),('field','object'),\
+             ('chan01', 'float64'), ('chan01err', 'float64'),\
+             ('chan02', 'float64'), ('chan02err', 'float64'),\
+             ('chan03', 'float64'), ('chan03err', 'float64'),\
+             ('chan04', 'float64'), ('chan04err', 'float64'),\
+             ('chan05', 'float64'), ('chan05err', 'float64'),\
+             ('chan06', 'float64'), ('chan06err', 'float64'),\
+             ('chan07', 'float64'), ('chan07err', 'float64'),\
+             ('chan08', 'float64'), ('chan08err', 'float64'),\
+             ('chan09', 'float64'), ('chan09err', 'float64'),\
+             ('chan10', 'float64'), ('chan10err', 'float64'),\
+             ('chan11', 'float64'), ('chan11err', 'float64'),\
+             ('chan12', 'float64'), ('chan12err', 'float64'),\
+             ('chan13', 'float64'), ('chan13err', 'float64'),\
+             ('chan14', 'float64'), ('chan14err', 'float64'),\
+             ('si_m','float64'),('si_point_num','int32'),\
+             ('xi','float64'),('pvalue','float64'),\
+             ('overlap','float64'),('overlap_field','object'),\
+             ('edge','bool'),('overlap_mask','bool')]
+    full_table = Table(data=np.zeros(shape, dtype=dtype))
+    return full_table
