@@ -17,6 +17,7 @@ import common.image as image
 import common.data_checks as checks
 import multiprocessing as mp
 import numpy as np
+import common.data_helper as helper
 
 
 def aperture_phot(path, channel_number):
@@ -62,26 +63,24 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.folder_loc is None:
-        print("Must have folder location. Please include --folder_loc='filepath/filename'")
+        print("Must have folder location. Please include --folder_loc='filepath/foldername'")
         print("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
         exit()
 
     path = args.folder_loc
 
     # Check if the required files are present, if not exits program and prints advisories.
-    all_lists_check = checks.check_lists(path)
+    all_lists_check, backgrounds, channels = checks.check_lists(path)
 
     if all_lists_check:
         # Constructs the data cube for the specific MeerKAT data, gathering the individual channel data,
         # the background information, and the rms data
-        data_cube = image.Image(path)
-        total_channels = len(data_cube.channels)
+        total_channels = len(channels)
         # Checks if any of the files have been processed. If some but not all have, only runs photometry on
         # the channels missing files.
-        # channels_to_process, phot_exist = checks.process_channels_check(path, data_cube.channels, total_channels,
-        #                                                                  backgrounds)
-        phot_exist = False
-        channels_to_process = [0]
+        channels_to_process, phot_exist = checks.process_channels_check(path, channels, total_channels,
+                                                                        backgrounds)
+
         print(f'Does Phot exist: {phot_exist} ')
         if not phot_exist:
             pool = mp.Pool()

@@ -55,9 +55,9 @@ def process_channels_check(location, channels, total_channels, backgrounds):
             else:
                 print('Channel does not exist. Please check if all fits files are present.')
 
-        elif phot_exist != False and k == 13 and len(existing_channels) == 14:
+        elif phot_exist != False and k == 13 and len(existing_channels) == 0:
             print(
-                'Photometry files exists for ' + location + 'so processing was skipped. To re-run, remove phot_list '
+                'Photometry files exists for ' + location + ' and processing was skipped. To re-run, remove phot_list '
                                                             'from directory.')
             exit()
 
@@ -93,4 +93,7 @@ def check_lists(location):
         all_lists_check = True
         print('All lists found. Processing photometry.')
 
-    return all_lists_check
+    return all_lists_check, back_list, channels_list
+
+def bane_check(location):
+

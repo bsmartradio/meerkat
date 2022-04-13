@@ -9,7 +9,6 @@ import numpy as np
 # a number of MeerKAT processes. Many of them assume a standard file structure and MeerKAT data labeling.
 
 def get_name(location):
-    print(location)
     if location[-1] == '/':
         last_char_index = location[:-1].rfind("/")
         name = location[last_char_index + 1:-1]
@@ -24,6 +23,10 @@ def get_name(location):
 
 
 def find_backgrounds(location, background= False, rms = False):
+
+    if not background and not rms:
+        background = True
+
     if location[-1] != '/':
         location = location +'/'
     if background is True:
