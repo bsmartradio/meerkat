@@ -1,13 +1,9 @@
 import numpy as np
-import glob
 import matplotlib.pyplot as plt
 import argparse
-from numpy.linalg import norm
-from astropy.io import fits
 import common.data_helper as helper
 import common.image as image
-from astropy.wcs import WCS
-from astropy.table import Table
+import common.neighbor_checks as n_checks
 
 
 # The purpose of this program is to take neighboring cubes from MeerKAT and the Aegean
@@ -19,11 +15,9 @@ from astropy.table import Table
 # the files will be location in Mosaic_Planes.
 # It then requires the names of 3 different cubes to be compared.
 # Generally, when used in the pipelines, the cubes will be read in via the jobSubmitter_Compare.py,
-# however it is possible to use induvidually as long as three neighboring cubes are provided.
+# however it is possible to use individually as long as three neighboring cubes are provided.
 
 if __name__ == '__main__':
-
-    location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
 
     parser = argparse.ArgumentParser(description='Must have folder location')
     parser.add_argument("--folder_one")
@@ -34,7 +28,7 @@ if __name__ == '__main__':
 
     if not args.folder_one:
         print("Must have folder locations. Please include --folder_one='filepath',--folder_two='filepath',"
-            "--folder_three='filepath'")
+              "--folder_three='filepath'")
         exit()
 
     folder_one = args.folder_one
@@ -43,48 +37,38 @@ if __name__ == '__main__':
 
     min_res = 0.00222222 / 4.0
 
-    # folder_one= '/d/MeerKAT/Test/G345.5+000I'
-    # folder_two= '/d/MeerKAT/Test/G357.5+000I'
-    # folder_three= '/d/MeerKAT/Test/G002.5+0.0IFx'
-
     folder = []
     folder.append(folder_one)
     folder.append(folder_two)
     folder.append(folder_three)
 
-    data_cube_left=image.Image(folder_one)
-    data_cube_center = image.Image(folder_two)
-    data_cube_right = image.Image(folder_three)
+    data_cubes=[]
+    data_cubes.append(image.Image(folder_one))
+    data_cubes.append(image.Image(folder_two))
+    data_cubes.append(image.Image(folder_three))
 
-    for k in folder:
-        names.append(helper.get_name(k))
+    phot_tables=[]
+    for i in range(3):
+        phot_tables.append(helper.load_phot_table(folder[i]+'/'+data_cubes[i].folder_name+'_full_table_cut.npy'))
 
-    vot_folder = '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs'
-
-    # Load in all the relevant files here
-    vot_list = load_neighbors(names, vot_folder)
-    phot_list = get_phot(names, folder)
-    positions = coords_table(folder, names, vot_list)
-    for i, name in enumerate(names):
-        images.append(get_image(folder[i] + name + '_Mosaic_chan01.fits'))
 
     lon_range = np.empty([3, 2])
     lon_range[:] = np.nan
 
     # Get all the min and max of the longitudes for each cube here
     for i in range(3):
-        min_lon, max_lon = minmax_coord(images[i][1])
+        min_lon, max_lon = helper.minmax_coord(data_cubes[i].channels[0].header)
         lon_range[i, 0] = min_lon
         lon_range[i, 1] = max_lon
 
     # Check if a point is too close to the edge and mark here
 
     for i in range(3):
-        for index, j in enumerate(vot_list[i]['lon']):
+        for index, j in enumerate(data_cubes[i].vot_table['lon']):
             if j <= (lon_range[i, 0] + .01):
-                phot_list[i]['edge'][index] = True
+                phot_tables[i]['edge'][index] = True
             elif j >= (lon_range[i, 1] - .01):
-                phot_list[i]['edge'][index] = True
+                phot_tables[i]['edge'][index] = True
 
     # This sorts all of the overlapping points. I think?? I combine both neighbors into just the
     # overlap neighbor?
@@ -96,22 +80,22 @@ if __name__ == '__main__':
     overlap_lat_center = []
     overlap_index_center = []
 
-    overlap_lon_neighbor, overlap_lat_neighbor, overlap_index_neighbor = overlap_check(vot_list[1], vot_list[0],
+    overlap_lon_neighbor, overlap_lat_neighbor, overlap_index_neighbor = n_checks.overlap_check(data_cubes[1].vot_table, data_cubes[0].vot_table,
                                                                                        overlap_lon_neighbor,
                                                                                        overlap_lat_neighbor,
                                                                                        overlap_index_neighbor, lon_range[1],
                                                                                        lon_range[0])
-    overlap_lon_neighbor, overlap_lat_neighbor, overlap_index_neighbor = overlap_check(vot_list[1], vot_list[2],
+    overlap_lon_neighbor, overlap_lat_neighbor, overlap_index_neighbor = n_checks.overlap_check(data_cubes[1].vot_table, data_cubes[2].vot_table,
                                                                                        overlap_lon_neighbor,
                                                                                        overlap_lat_neighbor,
                                                                                        overlap_index_neighbor, lon_range[1],
                                                                                        lon_range[2])
 
-    overlap_lon_center, overlap_lat_center, overlap_index_center = overlap_check(vot_list[0], vot_list[1],
+    overlap_lon_center, overlap_lat_center, overlap_index_center = n_checks.overlap_check(data_cubes[0].vot_table, data_cubes[1].vot_table,
                                                                                  overlap_lon_center, overlap_lat_center,
                                                                                  overlap_index_center, lon_range[0],
                                                                                  lon_range[1])
-    overlap_lon_center, overlap_lat_center, overlap_index_center = overlap_check(vot_list[2], vot_list[1],
+    overlap_lon_center, overlap_lat_center, overlap_index_center = n_checks.overlap_check(data_cubes[2].vot_table, data_cubes[1].vot_table,
                                                                                  overlap_lon_center, overlap_lat_center,
                                                                                  overlap_index_center, lon_range[2],
                                                                                  lon_range[1])
@@ -163,21 +147,21 @@ if __name__ == '__main__':
     for i in range(2):
         for j, name in enumerate(center_match[i]):
             if i == 0:
-                phot_list[0]['overlap'][overlap_index_neighbor[0][0][neighbor_match[i][j]]] = phot_list[1]['id'][
+                phot_tables[0]['overlap'][overlap_index_neighbor[0][0][neighbor_match[i][j]]] = phot_tables[1]['id'][
                     overlap_index_center[i][0][center_match[i][j]]]
-                phot_list[0]['overlap_field'][overlap_index_neighbor[0][0][neighbor_match[i][j]]] = phot_list[1]['field'][0]
-                phot_list[1]['overlap'][overlap_index_center[0][0][center_match[i][j]]] = phot_list[0]['id'][
+                phot_tables[0]['overlap_field'][overlap_index_neighbor[0][0][neighbor_match[i][j]]] = phot_tables[1]['field'][0]
+                phot_tables[1]['overlap'][overlap_index_center[0][0][center_match[i][j]]] = phot_tables[0]['id'][
                     overlap_index_neighbor[i][0][neighbor_match[i][j]]]
-                phot_list[1]['overlap_field'][overlap_index_center[0][0][center_match[i][j]]] = phot_list[0]['field'][0]
-                phot_list[1]['overlap_mask'][overlap_index_center[0][0][center_match[i][j]]] = True
+                phot_tables[1]['overlap_field'][overlap_index_center[0][0][center_match[i][j]]] = phot_tables[0]['field'][0]
+                phot_tables[1]['overlap_mask'][overlap_index_center[0][0][center_match[i][j]]] = True
             else:
-                phot_list[2]['overlap'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = phot_list[1]['id'][
+                phot_tables[2]['overlap'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = phot_tables[1]['id'][
                     overlap_index_center[i][0][center_match[i][j]]]
-                phot_list[2]['overlap_field'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = phot_list[1]['field'][0]
-                phot_list[1]['overlap'][overlap_index_center[1][0][center_match[i][j]]] = phot_list[2]['id'][
+                phot_tables[2]['overlap_field'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = phot_tables[1]['field'][0]
+                phot_tables[1]['overlap'][overlap_index_center[1][0][center_match[i][j]]] = phot_tables[2]['id'][
                     overlap_index_neighbor[i][0][neighbor_match[i][j]]]
-                phot_list[1]['overlap_field'][overlap_index_center[1][0][center_match[i][j]]] = phot_list[2]['field'][0]
-                phot_list[2]['overlap_mask'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = True
+                phot_tables[1]['overlap_field'][overlap_index_center[1][0][center_match[i][j]]] = phot_tables[2]['field'][0]
+                phot_tables[2]['overlap_mask'][overlap_index_neighbor[i][0][neighbor_match[i][j]]] = True
     valuesArr = []
     for channel in range(14):
         val_list = []
@@ -188,8 +172,8 @@ if __name__ == '__main__':
             values2 = []
             for n in range(len(center_match[x])):
                 values.append(
-                    phot_list[1]['chan' + '{:02d}'.format(channel + 1)][overlap_index_center[x][0][center_match[x][n]]])
-                values2.append(phot_list[0 + x * 2]['chan' + '{:02d}'.format(channel + 1)][
+                    phot_tables[1]['chan' + '{:02d}'.format(channel + 1)][overlap_index_center[x][0][center_match[x][n]]])
+                values2.append(phot_tables[0 + x * 2]['chan' + '{:02d}'.format(channel + 1)][
                                    overlap_index_neighbor[x][0][neighbor_match[x][n]]])
             # Skips the empty planes
             if np.isnan(values).all() == True and np.isnan(values2).all() == True:
@@ -201,7 +185,7 @@ if __name__ == '__main__':
                 if x == 0:
                     val_list[0:] = [values, ]
                     val_list[1:] = [values2, ]
-                    matchedArr = fit_deviation(values, values2)
+                    matchedArr = n_checks.fit_deviation(values, values2)
                     val_list[2:] = [matchedArr, ]
 
                     outliers = np.where(abs(matchedArr) >= 0.15)
@@ -211,33 +195,16 @@ if __name__ == '__main__':
                     print(channel)
                     val_list[4:] = [values, ]
                     val_list[5:] = [values2, ]
-                    matchedArr = fit_deviation(values, values2)
+                    matchedArr = n_checks.fit_deviation(values, values2)
                     val_list[6:] = [matchedArr, ]
 
                     outliers = np.where(abs(matchedArr) >= 0.15)
                     val_list[7:] = [outliers, ]
             plt.suptitle('Main title')  # or plt.suptitle('Main title')
-        # This is a sanity check, not needed
-        # if len(val_list) < 5:
-        #    print('No values')
-        # elif not val_list or np.isnan(val_list[1]).all() or (np.isnan(val_list[4]).all() and np.isnan(val_list[5]).all() ):
-        #    print('No values')
-        # else:
-        #    plt.suptitle(f'Channel {channel} overlapping points') # or plt.suptitle('Main title')
-        #    f, axarr = plt.subplots(1,4,sharey=False,gridspec_kw = {'wspace':0, 'hspace':0})
-        #    axarr[0].plot(x_line,x_line, 'r--')
-        #    axarr[0].scatter(val_list[0],val_list[1])
-        #    if np.isnan(val_list[2]).all() != True:
-        #        axarr[1].hist(abs(val_list[2]), 10, histtype='bar', rwidth=0.8)
-        #    axarr[2].plot(x_line,x_line, 'r--')
-        #    axarr[2].scatter(val_list[4],val_list[5])
-        #    if np.isnan(val_list[6]).all() != True:
-        #        axarr[3].hist(abs(val_list[6]), 10, histtype='bar', rwidth=0.8)
-        # valuesArr[channel:]=[val_list]
 
     for i in range(3):
-        shape = len(phot_list[i]['id'])
-        full_table = make_table(shape)
+        shape = len(phot_tables[i]['id'])
+        full_table = helper.make_table(shape)
         for j in range(shape):
-            full_table[j] = phot_list[i][j]
-        full_table.write(f'{location}/{names[i]}/{names[i]}_full_table_cut.vot', format='votable', overwrite=True)
+            full_table[j] = phot_tables[i][j]
+        full_table.write(f'{folder[i]}/{data_cubes[i].folder_name}_full_table_cut.vot', format='votable', overwrite=True)
