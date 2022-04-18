@@ -15,6 +15,7 @@ class Image:
     positions = None
     location = None
 
+
     def __init__(self, path, single_channel=None):
 
         files = helper.find_channels(path)

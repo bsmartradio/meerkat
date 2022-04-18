@@ -68,9 +68,10 @@ def intersections(a, b):
         raise ValueError('something unexpected: ' + mp.geom_type)
 
 
-def overlap_check(center_vot, neighbor_vot, overlap_lon, overlap_lat, overlap_index, center_lon, neighbor_lon):
-    # Here I should mark both if it is in the overlap region and if it is marked as too close
+def overlap_check(neighbor_vot, center_lon, neighbor_lon):
+    # Mark both if it is in the overlap region and if it is marked as too close
     # to the edge
+    overlap_index = []
     if max(center_lon) > max(neighbor_lon):
         lon = neighbor_vot['lon'][np.where(neighbor_vot['lon'] > min(center_lon))]
         index = np.where(neighbor_vot['lon'] > min(center_lon))
@@ -81,11 +82,11 @@ def overlap_check(center_vot, neighbor_vot, overlap_lon, overlap_lat, overlap_in
         index = np.where(neighbor_vot['lon'] < max(center_lon))
         lat = neighbor_vot['lat'][np.where(neighbor_vot['lon'] < max(center_lon))]
 
-    overlap_lon.append(lon)
-    overlap_lat.append(lat)
-    overlap_index.append(index)
 
-    return overlap_lon, overlap_lat, overlap_index
+    overlap_index.append(index)
+    overlap_coords=np.array([lon,lat])
+
+    return overlap_coords, overlap_index
 
 
 def check_edge_points(data_cubes, phot_tables, lon_range):
