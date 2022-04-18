@@ -3,6 +3,7 @@ from shapely.geometry import LinearRing
 import matplotlib.pyplot as plt
 from numpy.linalg import norm
 
+
 def ellipse_polyline(ellipses, n=100):
     t = np.linspace(0, 2 * np.pi, n, endpoint=False)
     st = np.sin(t)
@@ -42,13 +43,13 @@ def check_overlap(table, full_table, location, name):
     return full_table
 
 
-def fit_deviation(valuesOne,valuesTwo):
-    p1=np.array([0.0,0.0])
-    p2=np.array([10.0,10.0])
-    p3=np.empty([len(valuesOne),2])
-    p3[:,0]=valuesOne
-    p3[:,1]=valuesTwo
-    matchedArr=np.cross(p2-p1,p3-p1)/norm(p2-p1)
+def fit_deviation(valuesOne, valuesTwo):
+    point_one = np.array([0.0, 0.0])
+    point_two = np.array([10.0, 10.0])
+    point_three = np.empty([len(valuesOne), 2])
+    point_three[:, 0] = valuesOne
+    point_three[:, 1] = valuesTwo
+    matchedArr = np.cross(point_two - point_one, point_three - point_one) / norm(point_two - point_one)
     return matchedArr
 
 
@@ -58,7 +59,6 @@ def intersections(a, b):
     # print(ea,eb)
     mp = ea.intersection(eb)
     if mp.is_empty:
-        # print('Geometries do not intersect')
         return [], []
     elif mp.geom_type == 'Point':
         return [mp.x], [mp.y]
@@ -67,22 +67,33 @@ def intersections(a, b):
     else:
         raise ValueError('something unexpected: ' + mp.geom_type)
 
-def overlap_check(center_vot, neighbor_vot,overlap_lon,overlap_lat,overlap_index,center_lon,neighbor_lon):
-    #Here I should mark both if it is in the overlap region and if it is marked as too close
-    #to the edge
+
+def overlap_check(center_vot, neighbor_vot, overlap_lon, overlap_lat, overlap_index, center_lon, neighbor_lon):
+    # Here I should mark both if it is in the overlap region and if it is marked as too close
+    # to the edge
     if max(center_lon) > max(neighbor_lon):
-        lon=neighbor_vot['lon'][np.where(  neighbor_vot['lon'] > min(center_lon))]
-        index=np.where(  neighbor_vot['lon'] > min(center_lon))
-        lat=neighbor_vot['lat'][np.where(  neighbor_vot['lon'] > min(center_lon))]
+        lon = neighbor_vot['lon'][np.where(neighbor_vot['lon'] > min(center_lon))]
+        index = np.where(neighbor_vot['lon'] > min(center_lon))
+        lat = neighbor_vot['lat'][np.where(neighbor_vot['lon'] > min(center_lon))]
 
     else:
-        lon=neighbor_vot['lon'][np.where( neighbor_vot['lon'] < max(center_lon))]
-        index=np.where(  neighbor_vot['lon'] < max(center_lon))
-        lat=neighbor_vot['lat'][np.where(  neighbor_vot['lon'] < max(center_lon) )]
+        lon = neighbor_vot['lon'][np.where(neighbor_vot['lon'] < max(center_lon))]
+        index = np.where(neighbor_vot['lon'] < max(center_lon))
+        lat = neighbor_vot['lat'][np.where(neighbor_vot['lon'] < max(center_lon))]
 
     overlap_lon.append(lon)
     overlap_lat.append(lat)
     overlap_index.append(index)
 
+    return overlap_lon, overlap_lat, overlap_index
 
-    return overlap_lon,overlap_lat,overlap_index
+
+def check_edge_points(data_cubes, phot_tables, lon_range):
+    for i in range(3):
+        for index, j in enumerate(data_cubes[i].vot_table['lon']):
+            if j <= (lon_range[i, 0] + .01):
+                phot_tables[i]['edge'][index] = True
+            elif j >= (lon_range[i, 1] - .01):
+                phot_tables[i]['edge'][index] = True
+
+    return phot_tables
