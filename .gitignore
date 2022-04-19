@@ -137,3 +137,9 @@ dmypy.json
 G279.5-0.5IFx/
 
 G285.5-0.5IFx/
+
+auto_bane_cluster.py
+
+auto_phot_table.py
+
+compare_outliers.py

@@ -24,11 +24,24 @@ class TestChannel(TestCase):
         for background in background_list:
             self.assertIn('bkg.fits', background)
 
-    def test_find_lists(self):
-        channels_list, back_list, vot_table, all_lists_check = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
+    def test_check_lists(self):
+        all_lists_check, back_list, channels_list = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
                                                                                  '/Mosaic_Planes/G282.5-0.5IFx')
         self.assertIs(True, all_lists_check)
 
-        channels_list, back_list, vot_table, all_lists_check = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
+        all_lists_check, back_list, channels_list = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
                                                                                  '/Mosaic_Planes/Empty')
         self.assertIs(False, all_lists_check)
+
+    def test_find_channels(self):
+        location='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
+        channels = helper.find_channels(location)
+
+        self.assertIs(14, len(channels))
+
+    def test_get_vot_list(self):
+        location = '/Users/bs19aam/Documents/test_data/'
+        vot_list=helper.get_vot_list(location, aegean=True)
+
+        for vot in vot_list:
+            self.assertIn('.vot', vot)
