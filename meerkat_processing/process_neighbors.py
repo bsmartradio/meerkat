@@ -4,8 +4,10 @@ import common.data_helper as helper
 import common.image as image
 import common.neighbor_checks as n_checks
 import common.match_overlap as n_match
-import common.build_neighbors as build
+import common.neighbors as build
+import plotting_tools.neighbor_channels
 import plotting_tools.neighbor_channels as n_plot
+import common.match_overlap as match
 
 # The purpose of this program is to take neighboring cubes from MeerKAT and the Aegean
 # source catalogues and identify overlapping sources, then check how well the sources
@@ -59,79 +61,44 @@ if __name__ == '__main__':
     phot_tables = n_checks.check_edge_points(data_cubes, phot_tables, lon_range)
 
     # Finds and labels all of the sources that should appear in both neighboring images
-    all_neighbors = build.Neighbors()
-    all_neighbors = n_match.match_overlap(data_cubes, lon_range, all_neighbors)
-
-    neighbor_match = []
-    center_match = []
-    neighbor_nomatch = []
+    neigh_sources = build.Neighbors()
+    neigh_sources = n_match.match_overlap(data_cubes, lon_range, neigh_sources)
 
     # I am matching the overlapping points here. In here, when I select the one matching point, the corresponding
     # value in phot list must be switched to overlapping point, as well as the overlapping field + ID value
 
-    for x in range(2):
-        matched_index_neighbor = []
-        nomatch_center = []
-        nomatch_neighbor = []
-        matched_index_center = []
-        distance_arr = []
-        for idx_first, lon in enumerate(all_neighbors.overlap_lon_neighbor[x]):
-            close_points_lon = []
-            close_points_lat = []
-            index_close = []
-            val_check = -1
-            lat = all_neighbors.overlap_lat_neighbor[x][idx_first]
-            for idx_second, m in enumerate(all_neighbors.overlap_lon_center[x]):
-                if lon - min_res <= m <= lon + min_res:
-                    close_points_lon.append(m)
-                    close_points_lat.append(all_neighbors.overlap_lat_center[x][idx_second])
-                    index_close.append(idx_second)
-                    val_check = 0
-            if close_points_lon != [] and val_check != -1:
-                # Pretty sure the match happens here
-                minimum = min(np.sqrt(np.square(close_points_lon - lon) + np.square(close_points_lat - lat)))
-                close_index = \
-                    np.where(np.sqrt(np.square(close_points_lon - lon) + np.square(close_points_lat - lat)) == minimum)[
-                        0]
-                print('Close index')
-                print(index_close[close_index[0]])
-                distance_arr.append(minimum)
-                matched_index_center.append(index_close[close_index[0]])
-                matched_index_neighbor.append(idx_first)
+    neigh_sources = match.match_duplicates(neigh_sources, min_res)
 
-            else:
-                nomatch_neighbor.append(idx_first)
+    plotting_tools.neighbor_channels.plot_channels(data_cubes,neigh_sources)
 
-        neighbor_match.append(matched_index_neighbor)
-        neighbor_nomatch.append(nomatch_neighbor)
-        center_match.append(matched_index_center)
-
+    # Assigns the ID of the matched sources.
     for i in range(2):
-        for j, name in enumerate(center_match[i]):
+        for j, name in enumerate(neigh_sources.center_match[i]):
             if i == 0:
-                phot_tables[0]['overlap'][all_neighbors.overlap_index_neighbor[0][0][neighbor_match[i][j]]] = \
-                    phot_tables[1]['id'][
-                        all_neighbors.overlap_index_center[i][0][center_match[i][j]]]
-                phot_tables[0]['overlap_field'][all_neighbors.overlap_index_neighbor[0][0][neighbor_match[i][j]]] = \
-                    phot_tables[1]['field'][0]
-                phot_tables[1]['overlap'][all_neighbors.overlap_index_center[0][0][center_match[i][j]]] = \
-                    phot_tables[0]['id'][
-                        all_neighbors.overlap_index_neighbor[i][0][neighbor_match[i][j]]]
-                phot_tables[1]['overlap_field'][all_neighbors.overlap_index_center[0][0][center_match[i][j]]] = \
+                phot_tables[0]['overlap'][neigh_sources.overlap_index_neighbor[0][0][neigh_sources.neighbor_match[i][j]]] \
+                    = phot_tables[1]['id'][neigh_sources.overlap_index_center[i][0][neigh_sources.center_match[i][j]]]
+                phot_tables[0]['overlap_field'][neigh_sources.overlap_index_neighbor[0][0][neigh_sources.neighbor_match[i][j]]] \
+                    = phot_tables[1]['field'][0]
+                phot_tables[1]['overlap'][neigh_sources.overlap_index_center[0][0][neigh_sources.center_match[i][j]]] = \
+                    phot_tables[0]['id'][neigh_sources.overlap_index_neighbor[i][0][neigh_sources.neighbor_match[i][j]]]
+                phot_tables[1]['overlap_field'][neigh_sources.overlap_index_center[0][0][neigh_sources.center_match[i][j]]] = \
                     phot_tables[0]['field'][0]
-                phot_tables[1]['overlap_mask'][all_neighbors.overlap_index_center[0][0][center_match[i][j]]] = True
+                phot_tables[1]['overlap_mask'][neigh_sources.overlap_index_center[0][0][neigh_sources.center_match[i][j]]] = True
             else:
-                phot_tables[2]['overlap'][all_neighbors.overlap_index_neighbor[i][0][neighbor_match[i][j]]] = \
-                    phot_tables[1]['id'][
-                        all_neighbors.overlap_index_center[i][0][center_match[i][j]]]
-                phot_tables[2]['overlap_field'][all_neighbors.overlap_index_neighbor[i][0][neighbor_match[i][j]]] = \
+                if neigh_sources.center_match[i][j] == 269:
+                    print('stopping!')
+                phot_tables[2]['overlap'][neigh_sources.overlap_index_neighbor[i][0][neigh_sources.neighbor_match[i][j]]] = \
+                    phot_tables[1]['id'][neigh_sources.overlap_index_center[i][0][neigh_sources.center_match[i][j]]]
+                print(i)
+                print(j)
+                phot_tables[2]['overlap_field'][neigh_sources.overlap_index_neighbor[i][0][neigh_sources.neighbor_match[i][j]]] = \
                     phot_tables[1]['field'][0]
-                phot_tables[1]['overlap'][all_neighbors.overlap_index_center[1][0][center_match[i][j]]] = \
+                phot_tables[1]['overlap'][neigh_sources.overlap_index_center[1][0][neigh_sources.center_match[i][j]]] = \
                     phot_tables[2]['id'][
-                        all_neighbors.overlap_index_neighbor[i][0][neighbor_match[i][j]]]
-                phot_tables[1]['overlap_field'][all_neighbors.overlap_index_center[1][0][center_match[i][j]]] = \
+                        neigh_sources.overlap_index_neighbor[i][0][neigh_sources.neighbor_match[i][j]]]
+                phot_tables[1]['overlap_field'][neigh_sources.overlap_index_center[1][0][neigh_sources.center_match[i][j]]] = \
                     phot_tables[2]['field'][0]
-                phot_tables[2]['overlap_mask'][all_neighbors.overlap_index_neighbor[i][0][neighbor_match[i][j]]] = True
+                phot_tables[2]['overlap_mask'][neigh_sources.overlap_index_neighbor[i][0][neigh_sources.neighbor_match[i][j]]] = True
 
 
     valuesArr = []
@@ -142,12 +109,12 @@ if __name__ == '__main__':
             print(f'Values for {channel}')
             values = []
             values2 = []
-            for n in range(len(center_match[x])):
+            for n in range(len(neigh_sources.center_match[x])):
                 values.append(
                     phot_tables[1]['chan' + '{:02d}'.format(channel + 1)][
-                        all_neighbors.overlap_index_center[x][0][center_match[x][n]]])
+                        neigh_sources.overlap_index_center[x][0][neigh_sources.center_match[x][n]]])
                 values2.append(phot_tables[0 + x * 2]['chan' + '{:02d}'.format(channel + 1)][
-                                   all_neighbors.overlap_index_neighbor[x][0][neighbor_match[x][n]]])
+                                   neigh_sources.overlap_index_neighbor[x][0][neigh_sources.neighbor_match[x][n]]])
             # Skips the empty planes
             if np.isnan(values).all() is True and np.isnan(values2).all() is True:
                 print('No values')
@@ -185,4 +152,4 @@ if __name__ == '__main__':
                 allow_pickle=True, fix_imports=True)
 
     n_plot.all_sources(data_cubes)
-    n_plot.plot_channels(data_cubes, all_neighbors.overlap_index_center, all_neighbors.overlap_index_neighbor, val_list)
+    n_plot.plot_channels(data_cubes, neigh_sources.overlap_index_center, neigh_sources.overlap_index_neighbor, val_list)

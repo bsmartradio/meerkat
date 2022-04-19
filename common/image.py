@@ -24,7 +24,7 @@ class Image:
         self.location = path
         self.folder_name = helper.get_name(path)
         self.vot_location = helper.get_vot_location(path)
-        self.vot_table = helper.read_info(self.vot_location + self.folder_name +
+        self.vot_table = helper.read_vot(self.vot_location + self.folder_name +
                                           '_Mosaic_Mom0_comp.vot')
 
         if not single_channel:

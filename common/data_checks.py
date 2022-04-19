@@ -2,6 +2,7 @@ import glob
 import os
 import common.data_helper as helper
 import numpy as np
+import logging
 
 
 def file_check(location):
@@ -71,9 +72,9 @@ def check_lists(location):
     channels_list = sorted(glob.glob(location + "/*Mosaic_chan[0-9][0-9].fits"))
     vot_table = sorted(glob.glob(vot_location + name + '_Mosaic_Mom0_comp.vot'))
     back_list = sorted(glob.glob(location + "/*Mosaic_chan[0-9][0-9]_bkg.fits"))
-    print(f'Background list file: {back_list}')
-    print(f'List of channels file: {channels_list}')
-    print(f'Table of values file: {vot_table}')
+    logging.info(f'Background list file: {back_list}')
+    logging.info(f'List of channels file: {channels_list}')
+    logging.info(f'Table of values file: {vot_table}')
 
     # read all the channels and debug if missing files
     if channels_list == [] or back_list == [] or vot_table == []:
@@ -84,17 +85,13 @@ def check_lists(location):
             missing_files = 'background list file, '
         if not vot_table:
             missing_files = 'aegean vot tables file,'
-        print(
+        logging.warning(
             'You are missing ' + missing_files + '. Please make sure you have run auto_bane first and all files are '
                                                  'in the same folder.')
         all_lists_check = False
 
     else:
         all_lists_check = True
-        print('All lists found. Processing photometry.')
+        logging.info('All lists found. Processing photometry.')
 
     return all_lists_check, back_list, channels_list
-
-
-def bane_check(location):
-    print('hi')

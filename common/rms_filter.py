@@ -1,19 +1,4 @@
 import numpy as np
-from astropy.io import fits
-import common.data_helper as helper
-
-
-def read_info(location):
-    votable = parse(location)
-    # Read in the table
-
-    for resource in votable.resources:
-        for table in resource.tables:
-            # ... do something with the table ...
-            pass
-
-    return table
-
 
 def rms_cut(data_cube, full_table):
     total_cut = np.zeros(14)

@@ -15,6 +15,7 @@ def calc_xi_squared(spec_index_arr, spec_index_fit):
     return xi
 
 
+# noinspection PyTupleAssignmentBalance
 def si_fit(table, freq_list):
     for j in range(len(table['chan01'])):
         temp_array = np.zeros(14)
@@ -48,23 +49,11 @@ def correct_phot(phot):
 
     return corrected_phot
 
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Must have folder location')
-    parser.add_argument("--folder_location")
-
-    args = parser.parse_args()
-
-    if args.folder_location is None:
-        print("Must have folder location. Please include --folder_location='filepath'")
-        exit()
-    location = args.folder_location
-
-    data_cube = image.Image(location)
+def begin_combine(path):
+    data_cube = image.Image(path)
 
     for i in range(14):
-        phot_table = helper.load_phot_table(location + f'/phot_table_chan{i + 1:02d}.npy')
+        phot_table = helper.load_phot_table(path + f'/phot_table_chan{i + 1:02d}.npy')
         phot_table['aperture_sum'] = correct_phot(phot_table['aperture_sum'])
         if i == 0:
             shape = len(phot_table['aperture_sum'])
@@ -77,9 +66,11 @@ if __name__ == '__main__':
             full_table[f'chan{i + 1:02d}'] = phot_table['aperture_sum']
             full_table[f'chan{i + 1:02d}' + 'err'] = phot_table['aperture_sum_err']
 
-    if location[-1] != '/':
-        location = location + '/'
-    full_table.write(f'{location + data_cube.folder_name}_full_table.vot', format='votable', overwrite=True)
+    if path[-1] != '/':
+        path = path + '/'
+
+    full_table.write(f'{path + data_cube.folder_name}_full_table.vot', format='votable', overwrite=True)
+    np.save(path + data_cube.folder_name + '_full_table', full_table, allow_pickle=True, fix_imports=True)
 
     cut_num, full_table = rms_cut(data_cube, full_table)
     full_table['field'] = data_cube.folder_name
@@ -92,6 +83,19 @@ if __name__ == '__main__':
         frequency_list[i] = data_cube.channels[i].frequency
     full_table['si_m'] = np.nan
     full_table = si_fit(full_table, frequency_list)
-    full_table.write(f'{location + data_cube.folder_name}_full_table_cut.vot', format='votable', overwrite=True)
+    full_table.write(f'{path + data_cube.folder_name}_full_table_cut.vot', format='votable', overwrite=True)
+    np.save(path + data_cube.folder_name + '_full_table_cut', full_table, allow_pickle=True, fix_imports=True)
 
-    np.save(location + data_cube.folder_name + '_full_table_cut', full_table, allow_pickle=True, fix_imports=True)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Must have folder location')
+    parser.add_argument("--folder_loc")
+
+    args = parser.parse_args()
+
+    if args.folder_location is None:
+        print("Must have folder location. Please include --folder_loc='filepath'")
+        exit()
+    path = args.folder_location
+    begin_combine(path)

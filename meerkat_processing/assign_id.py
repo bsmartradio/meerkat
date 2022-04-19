@@ -31,7 +31,7 @@ def get_vot_list(location, aegean=False):
 
 def assign(num, table_name, aegean=False):
 
-    table = helper.read_info(table_name)
+    table = helper.read_vot(table_name)
     table.mask = False
     id_present= False
 
@@ -63,9 +63,6 @@ def assign(num, table_name, aegean=False):
     for i in range(len(table)):
         labeled_table['id'][i] = i+num
 
-    print(table_name)
-    print(labeled_table['id'][0])
-
     if aegean:
         image_name = helper.get_name(table_name)
         labeled_table['field'] = image_name
@@ -86,12 +83,9 @@ def assign(num, table_name, aegean=False):
     last_id = num+i
     return last_id
 
+def begin_assign(path):
 
-if __name__ == "__main__":
-
-    location = '/Users/bs19aam/Documents/test_data/'
-
-    vot_list = helper.get_vot_list(location)
+    vot_list = helper.get_vot_list(path)
 
     last_id = None
 

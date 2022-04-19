@@ -18,11 +18,9 @@ for filename in f:
 	folder=filepath+filename+'/'
 
 	qsub_command = """qsub  -v FILENAME='{0}' -N baneJob /beegfs/car/bsmart/MeerKAT/run_bane.sh""".format(folder)
-	#qsub_command = """qsub run_bane.sh""".format(filename)
 	print(qsub_command)
 	print('Submitting job')
 	exit_status = subprocess.call(qsub_command, shell=True)
-	#exit_status = subprocess.call('qsub run_bane.sh', shell=True)
 
 	if exit_status is 1:
 		print('Job failed to submit')

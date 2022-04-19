@@ -1,6 +1,5 @@
 import glob
 from astropy.io import fits
-from astropy.io.votable import parse
 from astropy.table import Table
 from astropy.wcs import WCS
 import numpy as np
@@ -42,7 +41,7 @@ def get_list(location):
     return folder_list
 
 
-def read_info(vot_location):
+def read_vot(vot_location):
     votable = parse(vot_location)
     table = votable.get_first_table()
     data = table.array
@@ -101,16 +100,16 @@ def get_vot_list(location, aegean=False):
 
 def get_vot_location(location):
     folder_name = get_name(location)
-    upper_folder = location[0:-len(folder_name) - 1].rfind("/")
+    upper_folder = location[0:-len(folder_name) - 2].rfind("/")
     vot_location = location[0:upper_folder] + '/Mom0_comp_catalogs/'
 
     return vot_location
 
 
 def load_neighbors(names, folder):
-    vot_mid = read_info(folder + '/' + names[1] + '_Mosaic_Mom0_comp.vot')
-    vot_left = read_info(folder + '/' + names[0] + '_Mosaic_Mom0_comp.vot')
-    vot_right = read_info(folder + '/' + names[2] + '_Mosaic_Mom0_comp.vot')
+    vot_mid = read_vot(folder + '/' + names[1] + '_Mosaic_Mom0_comp.vot')
+    vot_left = read_vot(folder + '/' + names[0] + '_Mosaic_Mom0_comp.vot')
+    vot_right = read_vot(folder + '/' + names[2] + '_Mosaic_Mom0_comp.vot')
 
     vot_list = [vot_left, vot_mid, vot_right]
 
