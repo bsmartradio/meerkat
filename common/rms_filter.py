@@ -1,11 +1,10 @@
 import numpy as np
 
+
 def rms_cut(data_cube, full_table):
     total_cut = np.zeros(14)
     for k in range(14):
-        print(k)
-        if np.isnan(data_cube.rms[k].data).any():
-            print(np.isnan(data_cube.rms[k].data).any())
+        if not np.isnan(data_cube.rms[k].data).all():
             mean_rms = np.nanmean(data_cube.rms[k].data)
             for j in range(len(full_table["chan" + "{:02d}".format(k + 1)])):
                 val = full_table["chan" + "{:02d}".format(k + 1)][j]

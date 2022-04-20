@@ -8,7 +8,6 @@
 #
 # Input example: python3 photometry.py --folder_loc"/Usr/example_data/Mosaic_Planes/G385_"
 
-import argparse
 import os
 from functools import partial
 from photutils import EllipticalAperture, aperture_photometry
@@ -32,7 +31,7 @@ def aperture_phot(path, channel_number):
     size = range(len(data_cube.positions))
 
     apertures = [EllipticalAperture(data_cube.positions[i], a_pix[i], b_pix[i], pa[i]) for i in size]
-    print(f'Processing channel {channel_number + 1} photometry')
+    logging.info(f'Processing channel {channel_number + 1} photometry')
     phot_table = [aperture_photometry(
         data_cube.channels[channel_number].data[:, :] - data_cube.background[channel_number].data[:, :],
         apert, error=data_cube.rms[channel_number].data[:, :]) for apert in apertures]
@@ -40,7 +39,7 @@ def aperture_phot(path, channel_number):
     np.save(data_cube.location + 'phot_table_chan' + "{:02d}".format(channel_number + 1), phot_table,
             allow_pickle=True, fix_imports=True)
     end = time.time()
-    print("The time it took to process one channel's photometry is :", end - start)
+    logging.info("The time it took to process one channel's photometry is :", end - start)
     finished = f"Channel {channel_number + 1} processed"
 
     return finished
@@ -59,7 +58,7 @@ def process_photometry(path):
         channels_to_process, phot_exist = checks.process_channels_check(path, channels, total_channels,
                                                                         backgrounds)
 
-        print(f'Does Phot exist: {phot_exist} ')
+        logging.info(f'Does Phot exist: {phot_exist} ')
         if not phot_exist:
             pool = mp.Pool()
             func = partial(aperture_phot, path)
@@ -84,21 +83,3 @@ def process_photometry(path):
 
         if phot_exist:
             logging.info('Cube has already been fully processed. Photometry tables in folder.')
-
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Must have folder location')
-    parser.add_argument("--folder_loc")
-
-    args = parser.parse_args()
-
-    if args.folder_loc is None:
-        print("Must have folder location. Please include --folder_loc='filepath/foldername'")
-        print("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
-        exit()
-
-    path = args.folder_loc
-
-    process_photometry(path)

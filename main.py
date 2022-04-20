@@ -4,6 +4,7 @@ import meerkat_processing.bane_processing as bane_processing
 import meerkat_processing.assign_id as assign_id
 import meerkat_processing.combine_photometry as combine_photometry
 import meerkat_processing.full_catalog as full_catalog
+import meerkat_processing.process_neighbors as process_neighbors
 import os
 import logging
 from app_logging import logger
@@ -38,6 +39,7 @@ if __name__ == '__main__':
 
         if path_check:
             try:
+                logging.info('Beginning Photometry processing')
                 photometry.process_photometry(path)
             except Exception as e:
                 logging.exception(msg='Photometry exited without processing', exc_info=e)
@@ -57,6 +59,7 @@ if __name__ == '__main__':
 
         if path_check:
             try:
+                logging.info('Beginning Bane background processing')
                 bane_processing.begin_bane(path)
             except Exception as e:
                 logging.exception(msg='Bane exited without processing', exc_info=e)
@@ -76,6 +79,7 @@ if __name__ == '__main__':
 
         if path_check:
             try:
+                logging.info('Beginning Combine')
                 combine_photometry.begin_combine(path)
             except Exception as e:
                 logging.exception(msg='Combine exited without processing', exc_info=e)
@@ -95,6 +99,7 @@ if __name__ == '__main__':
 
         if path_check:
             try:
+                logging.info('Beginning Assign_ID')
                 assign_id.begin_assign(path)
             except Exception as e:
                 logging.exception(msg='Assign_ID exited without processing', exc_info=e)
@@ -115,6 +120,7 @@ if __name__ == '__main__':
 
         if path_check:
             try:
+                logging.info('Beginning Full_Catalog')
                 full_catalog.begin_full_catalog(path)
             except Exception as e:
                 logging.exception(msg='Full catalog exited without processing', exc_info=e)
@@ -131,20 +137,23 @@ if __name__ == '__main__':
                             "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
             exit()
 
-        path = args.main_folder
-        path_check_one = os.path.isdir(path)
-        path_check_two = os.path.isdir(path)
-        path_check_three = os.path.isdir(path)
+        folder_one = args.folder_one
+        folder_two = args.folder_two
+        folder_three = args.folder_three
+        path_check_one = os.path.isdir(folder_one)
+        path_check_two = os.path.isdir(folder_two)
+        path_check_three = os.path.isdir(folder_three)
 
         if path_check_one and path_check_two and path_check_three:
             try:
-                full_catalog.begin_full_catalog(path)
+                logging.info('Beginning Neighbors')
+                process_neighbors.begin_neighbors(folder_one, folder_two, folder_three)
             except Exception as e:
                 logging.exception(msg='Exception in Nieghbors.', exc_info=e)
         else:
             logging.warning('Please check all three folder paths are valid to run Neighbors.')
 
-    else:
+    if not args.process:
 
         logging.warning('Please indicate which process you will be running using --process. \n'
                         'Avaliable processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'

@@ -3,6 +3,7 @@ from astropy.wcs import WCS
 from common.channel import Channel
 import common.data_helper as helper
 from common.backgrounds import Backgrounds
+import logging
 
 
 class Image:
@@ -15,7 +16,6 @@ class Image:
     positions = None
     location = None
 
-
     def __init__(self, path, single_channel=None):
 
         files = helper.find_channels(path)
@@ -25,7 +25,7 @@ class Image:
         self.folder_name = helper.get_name(path)
         self.vot_location = helper.get_vot_location(path)
         self.vot_table = helper.read_vot(self.vot_location + self.folder_name +
-                                          '_Mosaic_Mom0_comp.vot')
+                                         '_Mosaic_Mom0_comp.vot')
 
         if not single_channel:
             self.channels = self.get_channels(files)
@@ -42,12 +42,20 @@ class Image:
 
     def get_channels(self, files):
         cube = []
-        for file in files:
-            cube.append(Channel(file))
+
+        if type(files) is list:
+            for file in files:
+                cube.append(Channel(file))
+        if type(files) is str:
+            cube.append(Channel(files))
+
         return cube
 
     def get_backgrounds(self, files):
         cube_backgrounds = []
-        for file in files:
-            cube_backgrounds.append(Backgrounds(file))
+        if type(files) is list:
+            for file in files:
+                cube_backgrounds.append(Backgrounds(file))
+        if type(files) is str:
+            cube_backgrounds.append(Backgrounds(files))
         return cube_backgrounds

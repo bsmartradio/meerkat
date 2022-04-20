@@ -1,6 +1,7 @@
 import common.data_helper as helper
 import glob
 import numpy as np
+import logging
 
 
 # The purpose of this program is gather all the vot files for
@@ -20,20 +21,18 @@ import numpy as np
 # subset or is creating a limited area table
 
 def get_vot_list(location, aegean=False):
-
     if aegean:
-        vot_list = sorted(glob.glob(location+"Mom0_comp_catalogs/*Mosaic_Mom0_comp.vot"))
+        vot_list = sorted(glob.glob(location + "Mom0_comp_catalogs/*Mosaic_Mom0_comp.vot"))
     else:
-        vot_list = sorted(glob.glob(location+"Mosaic_Planes/G*/*full_table_cut.vot"))
+        vot_list = sorted(glob.glob(location + "Mosaic_Planes/G*/*full_table_cut.vot"))
 
     return vot_list
 
 
 def assign(num, table_name, aegean=False):
-
     table = helper.read_vot(table_name)
     table.mask = False
-    id_present= False
+    id_present = False
 
     if aegean:
         shape = len(table['source'])
@@ -41,7 +40,7 @@ def assign(num, table_name, aegean=False):
             labeled_table = helper.make_table(shape, aegean=True, table_type=table)
         else:
             labeled_table = helper.make_table(shape, aegean=True, table_type=table)
-            print('Id already column present in table')
+            logging.info('Id already column present in table')
             id_present = True
     else:
         shape = len(table['id'])
@@ -49,42 +48,42 @@ def assign(num, table_name, aegean=False):
             labeled_table = helper.make_table(shape)
         else:
             labeled_table = helper.make_table(shape)
-            print('Id column already  present in table')
+            logging.info('Id column already  present in table')
             id_present = True
 
     for i in range(shape):
         if aegean and not id_present:
             for j in range(len(table[0])):
-                labeled_table[i][j+1] = table[i][j]
+                labeled_table[i][j + 1] = table[i][j]
         else:
             if len(table[i]) != len(labeled_table[i]):
-                print('uhoh')
-            labeled_table[i] = table[i]
+                labeled_table[i] = table[i]
     for i in range(len(table)):
-        labeled_table['id'][i] = i+num
+        labeled_table['id'][i] = i + num
 
     if aegean:
         image_name = helper.get_name(table_name)
         labeled_table['field'] = image_name
         labeled_table.write(f'{table_name}', format='votable', overwrite=True)
-        #The 0:-4 is needed as otherwise the table will save as .vot.npy which we do not want.
+        # The 0:-4 is needed as otherwise the table will save as .vot.npy which we do not want.
         np.save(f'{table_name[0:-4]}', labeled_table, allow_pickle=True, fix_imports=True)
-        print('Aegean Files')
+        logging.info('Aegean Files written')
     else:
         image_name = helper.get_name(table_name)
         labeled_table['field'] = image_name
         labeled_table.write(f'{table_name}', format='votable', overwrite=True)
         np.save(f'{table_name[0:-4]}', labeled_table, allow_pickle=True, fix_imports=True)
+        logging.info('Photometry tables written')
 
     if not i:
-        print('Something went wrong, table was not looped through')
+        logging.warning('Something went wrong, table was not looped through. Assign_ID exited.')
         exit()
 
-    last_id = num+i
+    last_id = num + i
     return last_id
 
-def begin_assign(path):
 
+def begin_assign(path):
     vot_list = helper.get_vot_list(path)
 
     last_id = None
@@ -96,9 +95,9 @@ def begin_assign(path):
         else:
             last_id = assign(last_id, vot_name)
 
-        print(f"The last ID assigned for {vot_name} is {last_id}")
+        logging.info(f"The last ID assigned for {vot_name} is {last_id}")
 
-    vot_list = get_vot_list(location, aegean=True)
+    vot_list = get_vot_list(path, aegean=True)
 
     for i, vot_name in enumerate(vot_list):
 
@@ -107,4 +106,4 @@ def begin_assign(path):
         else:
             last_id = assign(last_id, vot_name, aegean=True)
 
-        print(f"The last ID assigned for {vot_name} is {last_id}")
+        logging.info(f"The last ID assigned for {vot_name} is {last_id}")

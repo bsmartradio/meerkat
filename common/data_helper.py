@@ -3,6 +3,7 @@ from astropy.io import fits
 from astropy.table import Table
 from astropy.wcs import WCS
 import numpy as np
+from astropy.io.votable import parse
 
 
 # This data_helper contains a number of short functions that are used across
@@ -36,9 +37,9 @@ def find_backgrounds(location, background=False, rms=False):
     return found_list
 
 
-def get_list(location):
-    folder_list = sorted(glob.glob(location + "G[0-9][0-9][0-9]*"))
-    return folder_list
+# def get_list(location):
+# folder_list = sorted(glob.glob(location + "G[0-9][0-9][0-9]*"))
+# return folder_list
 
 
 def read_vot(vot_location):
@@ -107,19 +108,24 @@ def get_vot_location(location):
 
 
 def load_neighbors(names, folder):
-    vot_mid = read_vot(folder + '/' + names[1] + '_Mosaic_Mom0_comp.vot')
-    vot_left = read_vot(folder + '/' + names[0] + '_Mosaic_Mom0_comp.vot')
-    vot_right = read_vot(folder + '/' + names[2] + '_Mosaic_Mom0_comp.vot')
+    if folder[-1] != '/':
+        folder = folder + '/'
+
+    vot_mid = read_vot(folder + names[1] + '_Mosaic_Mom0_comp.vot')
+    vot_left = read_vot(folder + names[0] + '_Mosaic_Mom0_comp.vot')
+    vot_right = read_vot(folder + names[2] + '_Mosaic_Mom0_comp.vot')
 
     vot_list = [vot_left, vot_mid, vot_right]
 
     return vot_list
 
 
+# noinspection PyTypeChecker
 def make_table(shape, aegean=False, table_type=[]):
-    if aegean and not table_type['id'].any():
+
+    if aegean and not 'id' in table_type.dtype.names:
         dtype = np.dtype([('id', 'int32')] + table_type.dtype.descr)
-    elif aegean and table_type['id'].any():
+    elif aegean and 'id' in table_type.dtype.names:
         dtype = np.dtype(table_type.dtype.descr)
     else:
         dtype = [('id', 'int32'), ('field', 'object'),

@@ -4,6 +4,7 @@ import argparse
 import common.data_helper as helper
 from common.rms_filter import rms_cut
 import common.image as image
+import logging
 
 
 # This program only needs the existing tables and a frequency list, so loading in the data_cubes is not needed for
@@ -60,9 +61,7 @@ def begin_combine(path):
             full_table = helper.make_table(shape)
             full_table[f'chan{i + 1:02d}'] = phot_table['aperture_sum']
             full_table[f'chan{i + 1:02d}' + 'err'] = phot_table['aperture_sum_err']
-            print('First channel')
         else:
-            print(f'chan{i + 1:02d}')
             full_table[f'chan{i + 1:02d}'] = phot_table['aperture_sum']
             full_table[f'chan{i + 1:02d}' + 'err'] = phot_table['aperture_sum_err']
 
@@ -85,17 +84,5 @@ def begin_combine(path):
     full_table = si_fit(full_table, frequency_list)
     full_table.write(f'{path + data_cube.folder_name}_full_table_cut.vot', format='votable', overwrite=True)
     np.save(path + data_cube.folder_name + '_full_table_cut', full_table, allow_pickle=True, fix_imports=True)
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Must have folder location')
-    parser.add_argument("--folder_loc")
-
-    args = parser.parse_args()
-
-    if args.folder_location is None:
-        print("Must have folder location. Please include --folder_loc='filepath'")
-        exit()
-    path = args.folder_location
-    begin_combine(path)
+    logging.info (f'Combined and RMS/Error cut photomoetry tables written to {path} as'
+                  f'{data_cube.folder_name}_full_table_cut')
