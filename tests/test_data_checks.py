@@ -7,7 +7,7 @@ from app_logging import logger
 
 class TestChecks(TestCase):
     location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-    logger.init(logging.DEBUG, '.', 'app_logging')
+    logger.init(logging.DEBUG, '.', 'test_logging')
 
     def test_process_channels_check(self):
         all_lists_check, backgrounds, channels_list = checks.check_lists(self.location)
@@ -18,10 +18,6 @@ class TestChecks(TestCase):
 
         self.assertFalse(phot_exist)
         self.assertEquals([0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13], existing_channels)
-
-        existing_channels, phot_exist = checks.process_channels_check(self.location, channels_list,
-                                                                      total_channels, backgrounds)
-        self.assertTrue(phot_exist)
 
     def test_check_lists(self):
         all_lists_check, back_list, channels_list = checks.check_lists(self.location)

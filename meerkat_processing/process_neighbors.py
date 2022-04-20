@@ -4,9 +4,9 @@ import common.image as image
 import common.neighbor_checks as n_checks
 import common.match_overlap as n_match
 import common.neighbors as build
-import plotting_tools.all_sources
-import plotting_tools.overlapping_points
-import plotting_tools.overlapping_points as n_plot
+from plotting_tools import all_sources
+from plotting_tools import bright_sources
+from plotting_tools import overlapping_points
 import common.match_overlap as match
 import logging
 
@@ -53,8 +53,7 @@ def begin_neighbors(folder_one, folder_two, folder_three):
     # value in phot list must be switched to overlapping point, as well as the overlapping field + ID value
 
     neigh_sources = match.match_duplicates(neigh_sources, min_res)
-
-    plotting_tools.neighbor_channels.plot(data_cubes, neigh_sources)
+    bright_sources.plot(data_cubes, phot_tables)
 
     # Assigns the ID of the matched sources.
     for i in range(2):
@@ -131,5 +130,6 @@ def begin_neighbors(folder_one, folder_two, folder_three):
         np.save(f'{folder[i]}/{data_cubes[i].folder_name}_full_table_cut', full_table,
                 allow_pickle=True, fix_imports=True)
 
+    plotting_tools.bright_sources.plot(data_cubes, phot_tables)
     plotting_tools.all_sources.plot(data_cubes)
     n_plot.plot(data_cubes, neigh_sources.overlap_index_center, neigh_sources.overlap_index_neighbor, val_list)

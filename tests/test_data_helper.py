@@ -9,16 +9,19 @@ import numpy as np
 
 class TestChannel(TestCase):
 
+    location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
+    name = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits'
+
     def test_get_name(self):
-        name = helper.get_name('/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx')
+        name = helper.get_name(self.location)
         self.assertEqual('G282.5-0.5IFx', name)
-        name = helper.get_name('/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/')
+        name = helper.get_name(self.location)
         self.assertEqual('G282.5-0.5IFx', name)
 
     def test_find_backgrounds(self):
-        background_list = helper.find_backgrounds('/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx',
+        background_list = helper.find_backgrounds(self.location,
                                                   background=True)
-        rms_list = helper.find_backgrounds('/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx',
+        rms_list = helper.find_backgrounds(self.location,
                                            rms=True)
         self.assertEqual(14, len(rms_list))
         for rms in rms_list:
@@ -35,20 +38,18 @@ class TestChannel(TestCase):
         self.assertIsNotNone(vot.data)
 
     def test_get_image(self):
-        name = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits'
 
-        image = helper.get_image(name)
+        image = helper.get_image(self.name)
         self.assertIsNotNone(image)
         self.assertIsNotNone(image[0])
         self.assertIsNotNone(image[1])
         self.assertTrue(image[1]['SIMPLE'])
 
     def test_unify_coords(self):
-        location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-        vot_location = helper.get_vot_location(location)
-        name = helper.get_name(location)
+        vot_location = helper.get_vot_location(self.location)
+        name = helper.get_name(self.location)
         vot = helper.read_vot(vot_location + name + '_Mosaic_Mom0_comp.vot')
-        files = helper.find_channels(location)
+        files = helper.find_channels(self.location)
         channels = image.Image.get_channels(self, files[0])
         w = WCS(channels[0].header, naxis=2)
         positions = helper.unify_coords(vot, w)
@@ -59,8 +60,7 @@ class TestChannel(TestCase):
         self.assertEqual(len(vot['id']), len(positions))
 
     def test_minmax_coord(self):
-        location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-        files = helper.find_channels(location)
+        files = helper.find_channels(self.location)
         channels = image.Image.get_channels(self, files[0])
         min, max = helper.minmax_coord(channels[0].header)
 
@@ -71,8 +71,7 @@ class TestChannel(TestCase):
         self.assertLessEqual(max, 360)
 
     def test_find_channels(self):
-            location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-            channels = helper.find_channels(location)
+            channels = helper.find_channels(self.location)
 
             self.assertIs(14, len(channels))
             for channel in channels:
@@ -80,15 +79,13 @@ class TestChannel(TestCase):
                 self.assertEqual('.fits', channel[-5:])
 
     def test_get_vot_list(self):
-        location = '/Users/bs19aam/Documents/test_data/'
-        vot_list = helper.get_vot_list(location, aegean=True)
+        vot_list = helper.get_vot_list(self.location, aegean=True)
 
         for vot in vot_list:
             self.assertIn('.vot', vot)
 
     def test_get_vot_location(self):
-        location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-        vot_location = helper.get_vot_location(location)
+        vot_location = helper.get_vot_location(self.location)
 
         self.assertIs(type(vot_location), str)
         self.assertIn('Mom0_comp_catalogs', vot_location)
@@ -114,12 +111,11 @@ class TestChannel(TestCase):
         small_table = helper.make_table(small_shape)
         large_table = helper.make_table(large_shape)
 
-        self.assertIs(small_shape, len(small_table))
-        self.assertIs(large_shape, len(large_table))
+        self.assertEquals(small_shape, len(small_table))
+        self.assertEquals(large_shape, len(large_table))
 
     def test_check_lists(self):
-        all_lists_check, back_list, channels_list = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
-                                                                                   '/Mosaic_Planes/G282.5-0.5IFx')
+        all_lists_check, back_list, channels_list = common.data_checks.check_lists(self.location)
         self.assertIs(True, all_lists_check)
 
         all_lists_check, back_list, channels_list = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
