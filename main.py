@@ -9,10 +9,11 @@ import os
 import logging
 from app_logging import logger
 
-def photometry(args):
+
+def start_photometry(args):
     if args.folder_loc is None:
-        logging.warning("Must have folder location.\nPlease include --folder_loc='filepath/foldername' argument.\n"
-                        "Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
+        logging.warning('Must have folder location.\nPlease include --folder_loc="filepath/foldername" argument.\n'
+                        'Example: --folder_loc="/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
         exit()
 
     path = args.folder_loc
@@ -27,6 +28,113 @@ def photometry(args):
     else:
         logging.warning('folder_loc does not contain a valid filepath')
 
+
+def start_bane(args):
+    if args.folder_loc is None:
+        logging.warning(
+            'Must have folder location. Please include --folder_loc="filepath/foldername" argument')
+        logging.warning('Example: --folder_loc="/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
+        exit()
+
+    path = args.folder_loc
+    path_check = os.path.isdir(path)
+
+    if path_check:
+        try:
+            logging.info('Beginning Bane background processing')
+            bane_processing.begin_bane(path)
+
+        except Exception as e:
+            logging.exception(msg='Bane exited without processing', exc_info=e)
+    else:
+        logging.warning('folder_loc does not contain a valid filepath')
+
+
+def start_combine(args):
+    if args.folder_loc is None:
+        logging.warning(
+            "Must have folder location. Please include --folder_loc='filepath/foldername'")
+        logging.warning("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
+        exit()
+
+    path = args.folder_loc
+    path_check = os.path.isdir(path)
+
+    if path_check:
+        try:
+            logging.info('Beginning Combine')
+            combine_photometry.begin_combine(path)
+        except Exception as e:
+            logging.exception(msg='Combine exited without processing', exc_info=e)
+    else:
+        logging.warning('folder_loc does not contain a valid filepath')
+
+
+def start_assign_id(args):
+    if args.main_folder is None:
+        logging.warning("Must have main folder location containing all processed cube folders. Please include"
+                        " --main_folder='filepath'")
+        logging.warning("Example: --main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
+        exit()
+
+    path = args.main_folder
+    path_check = os.path.isdir(path)
+
+    if path_check:
+        try:
+            logging.info('Beginning Assign_ID')
+            assign_id.begin_assign(path)
+        except Exception as e:
+            logging.exception(msg='Assign_ID exited without processing', exc_info=e)
+    else:
+        logging.warning('--main_folder does not contain a valid filepath')
+
+def start_full_catalog(args):
+    if args.main_folder is None:
+        logging.warning("Must have main folder location containing all processed cube folders. \n"
+                        "Please include --main_folder='filepath' \n"
+                        "Example: \n--main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
+        exit()
+
+    path = args.main_folder
+    path_check = os.path.isdir(path)
+
+    if path_check:
+        try:
+            logging.info('Beginning Full_Catalog')
+            full_catalog.begin_full_catalog(path)
+        except Exception as e:
+            logging.exception(msg='Full catalog exited without processing', exc_info=e)
+    else:
+        logging.warning('--main_folder does not contain a valid filepath')
+
+
+def start_neighbors(args):
+    if args.folder_one is None or args.folder_two is None or args.folder_three is None:
+        logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
+                        "--folder_two='filepath', and --folder_three='filepath' \n"
+                        "Example:\n--folder_one='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
+                        "--folder_two='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
+                        "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
+        exit()
+
+    folder_one = args.folder_one
+    folder_two = args.folder_two
+    folder_three = args.folder_three
+    path_check_one = os.path.isdir(folder_one)
+    path_check_two = os.path.isdir(folder_two)
+    path_check_three = os.path.isdir(folder_three)
+
+    if path_check_one and path_check_two and path_check_three:
+        try:
+            logging.info('Beginning Neighbors')
+            process_neighbors.begin_neighbors(folder_one, folder_two, folder_three)
+        except Exception as e:
+            logging.exception(msg='Exception in Nieghbors.', exc_info=e)
+    else:
+        logging.warning('Please check all three folder paths are valid to run Neighbors.')
+
+
 if __name__ == '__main__':
 
     logger.init(logging.DEBUG, '.', 'app_logging')
@@ -36,17 +144,16 @@ if __name__ == '__main__':
                                                  ' Photometry and Combine require --folder_loc. Neighbors requires '
                                                  '--folder_one, --folder_two, and --folder_three. Assign_ID and '
                                                  'Full_Catalog require --main_folder.')
-    parser.add_argument("--process")
-    parser.add_argument("--folder_loc")
-    parser.add_argument("--main_folder")
-    parser.add_argument("--folder_one")
-    parser.add_argument("--folder_two")
-    parser.add_argument("--folder_three")
+    parser.add_argument('--process')
+    parser.add_argument('--folder_loc')
+    parser.add_argument('--main_folder')
+    parser.add_argument('--folder_one')
+    parser.add_argument('--folder_two')
+    parser.add_argument('--folder_three')
 
     args = parser.parse_args()
 
     if not args.process:
-
         logging.warning('Please indicate which process you will be running using --process. \n'
                         'Avaliable processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'
                         ' Photometry and Combine require --folder_loc. \nNeighbors requires '
@@ -54,112 +161,30 @@ if __name__ == '__main__':
                         'Full_Catalog require --main_folder.')
 
     if args.process.lower() == 'photometry':
-        photometry(args)
+        start_photometry(args)
         exit()
 
-    if args.process == 'bane' or args.process == 'Bane':
+    elif args.process.lower() == 'bane':
+        start_bane(args)
+        exit()
 
-        if args.folder_loc is None:
-            logging.warning(
-                "Must have folder location. Please include --folder_loc='filepath/foldername' argument")
-            logging.warning("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
-            exit()
+    elif args.process.lower() == 'combine':
+        start_combine(args)
+        exit()
 
-        path = args.folder_loc
-        path_check = os.path.isdir(path)
+    elif args.process.lower() == 'assign_id':
+        start_assign_id(args)
+        exit()
 
-        if path_check:
-            try:
-                logging.info('Beginning Bane background processing')
-                bane_processing.begin_bane(path)
-            except Exception as e:
-                logging.exception(msg='Bane exited without processing', exc_info=e)
-        else:
-            logging.warning('folder_loc does not contain a valid filepath')
+    elif args.process.lower() == 'full_catalog':
+        start_full_catalog(args)
+        exit()
 
-    if args.process == 'combine' or args.process == 'Combine':
+    elif args.process.lower() == 'neighbors':
 
-        if args.folder_loc is None:
-            logging.warning(
-                "Must have folder location. Please include --folder_loc='filepath/foldername'")
-            logging.warning("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
-            exit()
+        start_neighbors(args)
+        exit()
 
-        path = args.folder_loc
-        path_check = os.path.isdir(path)
-
-        if path_check:
-            try:
-                logging.info('Beginning Combine')
-                combine_photometry.begin_combine(path)
-            except Exception as e:
-                logging.exception(msg='Combine exited without processing', exc_info=e)
-        else:
-            logging.warning('folder_loc does not contain a valid filepath')
-
-    if args.process == 'assign_id' or args.process == 'Assign_id' or args.process == 'Assign_Id':
-
-        if args.main_folder is None:
-            logging.warning("Must have main folder location containing all processed cube folders. Please include"
-                            " --main_folder='filepath'")
-            logging.warning("Example: --main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
-            exit()
-
-        path = args.main_folder
-        path_check = os.path.isdir(path)
-
-        if path_check:
-            try:
-                logging.info('Beginning Assign_ID')
-                assign_id.begin_assign(path)
-            except Exception as e:
-                logging.exception(msg='Assign_ID exited without processing', exc_info=e)
-        else:
-            logging.warning('--main_folder does not contain a valid filepath')
-
-    if args.process == 'full_catalog' or args.process == 'Full_catalog' or \
-            args.process == 'Full_Catalog':
-
-        if args.main_folder is None:
-            logging.warning("Must have main folder location containing all processed cube folders. \n" 
-                            "Please include --main_folder='filepath' \n" 
-                            "Example: \n--main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
-            exit()
-
-        path = args.main_folder
-        path_check = os.path.isdir(path)
-
-        if path_check:
-            try:
-                logging.info('Beginning Full_Catalog')
-                full_catalog.begin_full_catalog(path)
-            except Exception as e:
-                logging.exception(msg='Full catalog exited without processing', exc_info=e)
-        else:
-            logging.warning('--main_folder does not contain a valid filepath')
-
-    if args.process == 'neighbors' or args.process == 'Neighbors':
-
-        if args.folder_one is None or args.folder_two is None or args.folder_three is None:
-            logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
-                            "--folder_two='filepath', and --folder_three='filepath' \n" 
-                            "Example:\n--folder_one='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n" 
-                            "--folder_two='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n" 
-                            "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
-            exit()
-
-        folder_one = args.folder_one
-        folder_two = args.folder_two
-        folder_three = args.folder_three
-        path_check_one = os.path.isdir(folder_one)
-        path_check_two = os.path.isdir(folder_two)
-        path_check_three = os.path.isdir(folder_three)
-
-        if path_check_one and path_check_two and path_check_three:
-            try:
-                logging.info('Beginning Neighbors')
-                process_neighbors.begin_neighbors(folder_one, folder_two, folder_three)
-            except Exception as e:
-                logging.exception(msg='Exception in Nieghbors.', exc_info=e)
-        else:
-            logging.warning('Please check all three folder paths are valid to run Neighbors.')
+    else:
+        logging.warning('Input for --process is not recognized. Please check argument and choose from the following '
+                        'list:\nbane, photometry, combine, full_catalog, assign_id, neighbors.')
