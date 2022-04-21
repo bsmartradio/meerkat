@@ -9,6 +9,24 @@ import os
 import logging
 from app_logging import logger
 
+def photometry(args):
+    if args.folder_loc is None:
+        logging.warning("Must have folder location.\nPlease include --folder_loc='filepath/foldername' argument.\n"
+                        "Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
+        exit()
+
+    path = args.folder_loc
+    path_check = os.path.isdir(path)
+
+    if path_check:
+        try:
+            logging.info('Beginning Photometry processing')
+            photometry.process_photometry(path)
+        except Exception as e:
+            logging.exception(msg='Photometry exited without processing', exc_info=e)
+    else:
+        logging.warning('folder_loc does not contain a valid filepath')
+
 if __name__ == '__main__':
 
     logger.init(logging.DEBUG, '.', 'app_logging')
@@ -27,24 +45,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.process == 'photometry' or args.process == 'Photometry':
+    if not args.process:
 
-        if args.folder_loc is None:
-            logging.warning("Must have folder location.\nPlease include --folder_loc='filepath/foldername' argument.\n"
-                            "Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
-            exit()
+        logging.warning('Please indicate which process you will be running using --process. \n'
+                        'Avaliable processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'
+                        ' Photometry and Combine require --folder_loc. \nNeighbors requires '
+                        '--folder_one, --folder_two, and --folder_three. \nAssign_ID and '
+                        'Full_Catalog require --main_folder.')
 
-        path = args.folder_loc
-        path_check = os.path.isdir(path)
-
-        if path_check:
-            try:
-                logging.info('Beginning Photometry processing')
-                photometry.process_photometry(path)
-            except Exception as e:
-                logging.exception(msg='Photometry exited without processing', exc_info=e)
-        else:
-            logging.warning('folder_loc does not contain a valid filepath')
+    if args.process.lower() == 'photometry':
+        photometry(args)
+        exit()
 
     if args.process == 'bane' or args.process == 'Bane':
 
@@ -152,11 +163,3 @@ if __name__ == '__main__':
                 logging.exception(msg='Exception in Nieghbors.', exc_info=e)
         else:
             logging.warning('Please check all three folder paths are valid to run Neighbors.')
-
-    if not args.process:
-
-        logging.warning('Please indicate which process you will be running using --process. \n'
-                        'Avaliable processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'
-                        ' Photometry and Combine require --folder_loc. \nNeighbors requires '
-                        '--folder_one, --folder_two, and --folder_three. \nAssign_ID and '
-                        'Full_Catalog require --main_folder.')

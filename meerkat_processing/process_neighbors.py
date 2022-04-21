@@ -100,8 +100,8 @@ def begin_neighbors(folder_one, folder_two, folder_three):
                 logging.warning('No values')
             else:
                 # This checks both arrays at the same time.
-                # This one is the left one
                 # They contain the good matches, all the values, and a separate list of matches  that are bad
+                # This one is the leftmost image
                 if x == 0:
                     val_list[0:] = [values, ]
                     val_list[1:] = [values2, ]

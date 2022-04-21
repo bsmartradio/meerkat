@@ -9,14 +9,16 @@ def ellipse_polyline(ellipses, n=100):
     st = np.sin(t)
     ct = np.cos(t)
     result = []
-    for x0, y0, a, b, angle in ellipses:
-        angle = np.deg2rad(angle)
-        sa = np.sin(angle)
-        ca = np.cos(angle)
+
+    for x0, y0, a, b, t in ellipses:
+        t = np.deg2rad(t)
+        sa = np.sin(t)
+        ca = np.cos(t)
         p = np.empty((n, 2))
         p[:, 0] = x0 + a * ca * ct - b * sa * st
         p[:, 1] = y0 + a * sa * ct + b * ca * st
         result.append(p)
+
     return result
 
 
@@ -28,10 +30,12 @@ def check_overlap(table, full_table, location, name):
     pa = table['pa'].data
 
     for i in range(len(a)):
+
         for j in range(i + 1, len(a)):
             ellipses = [(lon[i], lat[i], a[i], b[i], pa[i]), (lon[j], lat[j], a[j], b[j], pa[j])]
             a_out, b_out = ellipse_polyline(ellipses)
             x, y = intersections(a_out, b_out)
+
             if x != []:
                 full_table['overlap'][i] = True
                 full_table['overlap'][j] = True
@@ -44,12 +48,14 @@ def check_overlap(table, full_table, location, name):
 
 
 def fit_deviation(valuesOne, valuesTwo):
+
     point_one = np.array([0.0, 0.0])
     point_two = np.array([10.0, 10.0])
     point_three = np.empty([len(valuesOne), 2])
     point_three[:, 0] = valuesOne
     point_three[:, 1] = valuesTwo
     matchedArr = np.cross(point_two - point_one, point_three - point_one) / norm(point_two - point_one)
+
     return matchedArr
 
 

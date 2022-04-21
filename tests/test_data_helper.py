@@ -1,4 +1,6 @@
 from unittest import TestCase
+from unittest.mock import patch, MagicMock
+
 from astropy.wcs import WCS
 
 import common.data_checks
@@ -8,7 +10,6 @@ import numpy as np
 
 
 class TestChannel(TestCase):
-
     location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
     name = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits'
 
@@ -19,23 +20,38 @@ class TestChannel(TestCase):
         self.assertEqual('G282.5-0.5IFx', name)
 
     def test_find_backgrounds(self):
-        background_list = helper.find_backgrounds(self.location,
-                                                  background=True)
-        rms_list = helper.find_backgrounds(self.location,
-                                           rms=True)
-        self.assertEqual(14, len(rms_list))
-        for rms in rms_list:
-            self.assertIn('rms.fits', rms)
-        self.assertEqual(14, len(background_list))
-        for background in background_list:
-            self.assertIn('bkg.fits', background)
+        return_value = ['01_bkg.fits', '02_bkg.fits', '03_bkg.fits', '04_bkg.fits', '05_bkg.fits', '06_bkg.fits',
+                        '07_bkg.fits', '08_bkg.fits', '09_bkg.fits', '10_bkg.fits', '11_bkg.fits', '12_bkg.fits',
+                        '13_bkg.fits', '14_bkg.fits']
+
+        with patch('glob.glob', return_value=return_value):
+            background_list = helper.find_backgrounds(self.location, background=True)
+            # rms_list = helper.find_backgrounds(self.location, rms=True)
+
+            # self.assertEqual(14, len(rms_list))
+            # for rms in rms_list:
+            #    self.assertIn('rms.fits', rms)
+            self.assertEqual(14, len(background_list))
+            for background in background_list:
+                self.assertIn('bkg.fits', background)
 
     def test_read_vot(self):
+        mock_array = MagicMock()
+        mock_array.data = ['1']
 
-        vot = helper.read_vot('/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
+        mock_table = MagicMock()
+        mock_table.array = mock_array
 
-        self.assertIsNotNone(vot)
-        self.assertIsNotNone(vot.data)
+        mock_vot_table = MagicMock()
+        mock_vot_table.get_first_table.return_value = mock_table
+
+        with patch('astropy.io.votable.table.parse', return_value=mock_vot_table):
+            vot = helper.read_vot('/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
+
+            self.assertIsNotNone(vot)
+            self.assertIsNotNone(vot.data)
+            self.assertTrue(mock_vot_table.get_first_table.called)
+            self.assertEquals(mock_array.data, vot.data)
 
     def test_get_image(self):
 
@@ -71,12 +87,12 @@ class TestChannel(TestCase):
         self.assertLessEqual(max, 360)
 
     def test_find_channels(self):
-            channels = helper.find_channels(self.location)
+        channels = helper.find_channels(self.location)
 
-            self.assertIs(14, len(channels))
-            for channel in channels:
-                self.assertEqual('chan', channel[-11:-7])
-                self.assertEqual('.fits', channel[-5:])
+        self.assertIs(14, len(channels))
+        for channel in channels:
+            self.assertEqual('chan', channel[-11:-7])
+            self.assertEqual('.fits', channel[-5:])
 
     def test_get_vot_list(self):
         vot_list = helper.get_vot_list(self.location, aegean=True)
@@ -99,13 +115,14 @@ class TestChannel(TestCase):
         self.assertIs(3, len(neighbors))
 
     def test_make_table(self):
-        small_shape=10
-        large_shape=500
-        example_dtype=np.dtype([('id', 'int32'), ('field', 'object'),
-                 ('chan01', 'float64')])
-        example_no_id_dtype = np.dtype([ ('field', 'object'),
-                 ('chan01', 'float64')])
-        vot = helper.read_vot('/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
+        small_shape = 10
+        large_shape = 500
+        example_dtype = np.dtype([('id', 'int32'), ('field', 'object'),
+                                  ('chan01', 'float64')])
+        example_no_id_dtype = np.dtype([('field', 'object'),
+                                        ('chan01', 'float64')])
+        vot = helper.read_vot(
+            '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
         small_table_aegean = helper.make_table(small_shape, aegean=True, table_type=vot)
         large_table_aegean = helper.make_table(large_shape, aegean=True, table_type=vot)
         small_table = helper.make_table(small_shape)
@@ -115,9 +132,9 @@ class TestChannel(TestCase):
         self.assertEquals(large_shape, len(large_table))
 
     def test_check_lists(self):
-        all_lists_check, back_list, channels_list = common.data_checks.check_lists(self.location)
+        all_lists_check, back_list, channels_list = common.data_checks.check_required_files_exist(self.location)
         self.assertIs(True, all_lists_check)
 
-        all_lists_check, back_list, channels_list = common.data_checks.check_lists('/Users/bs19aam/Documents/test_data'
+        all_lists_check, back_list, channels_list = common.data_checks.check_required_files_exist('/Users/bs19aam/Documents/test_data'
                                                                                    '/Mosaic_Planes/Empty')
         self.assertIs(False, all_lists_check)

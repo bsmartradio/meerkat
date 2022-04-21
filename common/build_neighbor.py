@@ -5,6 +5,3 @@ class BuildNeighbor:
     distance = []
     nomatch = []
     matched_index = []
-
-    def __init__(self):
-        print('Building Neighbor')

@@ -31,55 +31,66 @@ def aperture_phot(path, channel_number):
     size = range(len(data_cube.positions))
 
     apertures = [EllipticalAperture(data_cube.positions[i], a_pix[i], b_pix[i], pa[i]) for i in size]
+
     logging.info(f'Processing channel {channel_number + 1} photometry')
+
     phot_table = [aperture_photometry(
         data_cube.channels[channel_number].data[:, :] - data_cube.background[channel_number].data[:, :],
         apert, error=data_cube.rms[channel_number].data[:, :]) for apert in apertures]
 
-    np.save(data_cube.location + 'phot_table_chan' + "{:02d}".format(channel_number + 1), phot_table,
+    logging.info()
+
+    np.save(f'{data_cube.location}phot_table_chan' + '{:02d}'.format(channel_number + 1), phot_table,
             allow_pickle=True, fix_imports=True)
+
     end = time.time()
+
     logging.info("The time it took to process one channel's photometry is :", end - start)
-    finished = f"Channel {channel_number + 1} processed"
+
+    finished = f'Channel {channel_number + 1} processed'
 
     return finished
 
+
 def process_photometry(path):
-
     # Check if the required files are present, if not exits program and prints advisories.
-    all_lists_check, backgrounds, channels = checks.check_lists(path)
+    required_files_exist, backgrounds, channels = checks.check_required_files_exist(path)
 
-    if all_lists_check:
-        # Constructs the data cube for the specific MeerKAT data, gathering the individual channel data,
-        # the background information, and the rms data
-        total_channels = len(channels)
-        # Checks if any of the files have been processed. If some but not all have, only runs photometry on
-        # the channels missing files.
-        channels_to_process, phot_exist = checks.process_channels_check(path, channels, total_channels,
-                                                                        backgrounds)
+    if not required_files_exist:
+        exit()
 
-        logging.info(f'Does Phot exist: {phot_exist} ')
-        if not phot_exist:
-            pool = mp.Pool()
-            func = partial(aperture_phot, path)
-            pool.map(func, channels_to_process)
-            pool.close()
-            pool.join()
+    # Constructs the data cube for the specific MeerKAT data, gathering the individual channel data,
+    # the background information, and the rms data
+    total_channels = len(channels)
+    # Checks if any of the files have been processed. If some but not all have, only runs photometry on
+    # the channels missing files.
+    channels_to_process, phot_exist = checks.process_channels_check(path, channels, total_channels,
+                                                                    backgrounds)
+    logging.info(f'Does Phot exist: {phot_exist} ')
 
-        # Creates a text file containing all processed photometry for quick reference
-        phot_list = []
+    if not phot_exist:
+        # Phot does not exist, so we are going to create one
+        pool = mp.Pool()
+        func = partial(aperture_phot, path)
+        pool.map(func, channels_to_process)
+        pool.close()
+        pool.join()
 
-        dirs = os.listdir(path)
+    # Creates a text file containing all processed photometry for quick reference
+    phot_list = []
 
-        for line in dirs:
+    dirs = os.listdir(path)
 
-            if 'phot_table_chan' in line:
-                phot_list.append(line)
-                if phot_list:
-                    with open(path + 'phot_list.txt', 'w') as f:
-                        for k in phot_list:
-                            f.writelines(k)
-                            f.writelines("\n")
+    for line in dirs:
 
-        if phot_exist:
-            logging.info('Cube has already been fully processed. Photometry tables in folder.')
+        if 'phot_table_chan' in line:
+            phot_list.append(line)
+            if phot_list:
+                with open(path + 'phot_list.txt', 'w') as f:
+                    for k in phot_list:
+                        f.writelines(k)
+                        f.writelines("\n")
+
+    if phot_exist:
+        logging.info('Cube has already been fully processed. Photometry tables in folder.')
+

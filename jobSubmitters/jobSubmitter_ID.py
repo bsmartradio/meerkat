@@ -8,9 +8,9 @@ import subprocess
 # Top layer python script to set multiple jobs going on the cluster. 
 # =============================================================================
 
-filepath = '/beegfs/car/bsmart/MeerKAT/Mosaic_Planes/'
+filepath = '/Example/Mosaic_Planes/'
 
-qsub_command = """qsub   -N idJob /beegfs/car/bsmart/MeerKAT/run_id.sh"""
+qsub_command = """qsub   -N idJob /Example/MeerKAT/run_id.sh"""
 print(qsub_command)
 print('Submitting job')
 exit_status = subprocess.call(qsub_command, shell=True)

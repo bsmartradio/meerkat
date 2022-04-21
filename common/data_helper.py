@@ -1,15 +1,23 @@
 import glob
+import logging
+
+import astropy.io.votable
 from astropy.io import fits
 from astropy.table import Table
 from astropy.wcs import WCS
 import numpy as np
-from astropy.io.votable import parse
+from astropy.io.votable import table
 
 
 # This data_helper contains a number of short functions that are used across
 # a number of MeerKAT processes. Many of them assume a standard file structure and MeerKAT data labeling.
+from app_logging import logger
+
 
 def get_name(location):
+    if not location:
+        raise ValueError('Location cannot be none or empty')
+
     if location[-1] == '/':
         last_char_index = location[:-1].rfind("/")
         name = location[last_char_index + 1:-1]
@@ -25,15 +33,19 @@ def get_name(location):
 
 def find_backgrounds(location, background=False, rms=False):
     found_list = []
+
     if not background and not rms:
         background = True
 
-    if location[-1] != '/':
-        location = location + '/'
+    if not location.endswith('/'):
+        location += '/'
+
     if background is True:
-        found_list = sorted(glob.glob(location + "*[0-9][0-9]_bkg*"))
+        found_list = sorted(glob.glob(f"{location}*[0-9][0-9]_bkg*"))
+
     if rms is True:
         found_list = sorted(glob.glob(location + "*[0-9][0-9]_rms*"))
+
     return found_list
 
 
@@ -43,9 +55,13 @@ def find_backgrounds(location, background=False, rms=False):
 
 
 def read_vot(vot_location):
-    votable = parse(vot_location)
-    table = votable.get_first_table()
-    data = table.array
+    try:
+        votable = table.parse(vot_location)
+        first_table = votable.get_first_table()
+        data = first_table.array
+    except ValueError as ve:
+        logging.exception(ve, 'Failed to read VOT table')
+        raise ve
 
     return data
 
@@ -53,31 +69,31 @@ def read_vot(vot_location):
 def get_image(image_name):
     fits_file = fits.open(image_name)
     image_data = fits_file[0].data
-    hdr = fits_file[0].header
+    header = fits_file[0].header
     fits_file.close()
 
-    return image_data, hdr
+    return image_data, header
 
 
 def unify_coords(table, w):
     # This gets the world coordinate system and also translate the table values to pixel values
     lon = table['lon'].data
     lat = table['lat'].data
-    t = 0
+    i = 0
     test_arr = []
     for x in lon:
-        test = np.array([lon[t], lat[t]], np.float_)
+        test = np.array([lon[i], lat[i]], np.float_)
         test_arr.append(test)
-        t = t + 1
+        i = i + 1
     positions = w.wcs_world2pix(test_arr, 2)
 
     return positions
 
 
 def minmax_coord(header):
-    w = WCS(header)
-    min_lon = w.pixel_to_world(7500, 7500)
-    max_lon = w.pixel_to_world(0, 0)
+    wcs = WCS(header)
+    min_lon = wcs.pixel_to_world(7500, 7500)
+    max_lon = wcs.pixel_to_world(0, 0)
 
     return min_lon.l.degree, max_lon.l.degree
 
@@ -125,8 +141,10 @@ def make_table(shape, aegean=False, table_type=[]):
 
     if aegean and not 'id' in table_type.dtype.names:
         dtype = np.dtype([('id', 'int32')] + table_type.dtype.descr)
+
     elif aegean and 'id' in table_type.dtype.names:
         dtype = np.dtype(table_type.dtype.descr)
+
     else:
         dtype = [('id', 'int32'), ('field', 'object'),
                  ('chan01', 'float64'), ('chan01err', 'float64'),
@@ -147,7 +165,9 @@ def make_table(shape, aegean=False, table_type=[]):
                  ('xi', 'float64'), ('pvalue', 'float64'),
                  ('overlap', 'float64'), ('overlap_field', 'object'),
                  ('edge', 'bool'), ('overlap_mask', 'bool')]
+
     full_table = Table(data=np.zeros(shape, dtype=dtype))
+
     return full_table
 
 

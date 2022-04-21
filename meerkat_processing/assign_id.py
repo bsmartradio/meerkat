@@ -12,19 +12,15 @@ import logging
 # give an empty assignment to matching sources. When run, the program will look at the tables named with the
 # lowest longitude first and work its way up.
 
-# Input keywords
-# data_location: This is asking for the location where your data is stored. In our example, it wants test_data,
+# Input required:
+# path: This is asking for the location where your data is stored. In our example, it wants test_data,
 # which contains the sub folders Mosaic_Planes and Mosaic_Mom0_catalogs.
-# Full_table - This is when we are processing all the MeerKAT vot tables
-# sub_table = sub table reads in a file which lists the exact tables which are
-# being processed. This is for when someone may want to only look at a small
-# subset or is creating a limited area table
 
 def get_vot_list(location, aegean=False):
     if aegean:
-        vot_list = sorted(glob.glob(location + "Mom0_comp_catalogs/*Mosaic_Mom0_comp.vot"))
+        vot_list = sorted(glob.glob(location + 'Mom0_comp_catalogs/*Mosaic_Mom0_comp.vot'))
     else:
-        vot_list = sorted(glob.glob(location + "Mosaic_Planes/G*/*full_table_cut.vot"))
+        vot_list = sorted(glob.glob(location + 'Mosaic_Planes/G*/*full_table_cut.vot'))
 
     return vot_list
 
@@ -106,4 +102,4 @@ def begin_assign(path):
         else:
             last_id = assign(last_id, vot_name, aegean=True)
 
-        logging.info(f"The last ID assigned for {vot_name} is {last_id}")
+        logging.info(f'The last ID assigned for {vot_name} is {last_id}')

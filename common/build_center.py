@@ -4,6 +4,3 @@ class BuildCenter:
     center_match = []
     matched_index = []
     distance = []
-
-    def __init__(self):
-        print('Building Center')

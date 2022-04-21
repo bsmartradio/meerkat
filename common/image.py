@@ -44,8 +44,10 @@ class Image:
         cube = []
 
         if type(files) is list:
+
             for file in files:
                 cube.append(Channel(file))
+
         if type(files) is str:
             cube.append(Channel(files))
 
@@ -53,9 +55,13 @@ class Image:
 
     def get_backgrounds(self, files):
         cube_backgrounds = []
+
         if type(files) is list:
+
             for file in files:
                 cube_backgrounds.append(Backgrounds(file))
+
         if type(files) is str:
             cube_backgrounds.append(Backgrounds(files))
+
         return cube_backgrounds

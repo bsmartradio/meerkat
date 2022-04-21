@@ -9,7 +9,6 @@ class Neighbors:
     right = []
 
     def __init__(self):
-        print('Building Neighbors')
 
         self.center_left = build_center.BuildCenter()
         self.center_right = build_center.BuildCenter()
