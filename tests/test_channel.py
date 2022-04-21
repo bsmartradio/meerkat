@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from common.channel import Channel
+from models.channel import Channel
 
 
 class TestChannel(TestCase):

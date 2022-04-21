@@ -1,5 +1,5 @@
-from common import build_center
-from common import build_neighbor
+from models import build_center, build_neighbor
+
 
 class Neighbors:
 

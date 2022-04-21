@@ -1,17 +1,12 @@
 import glob
-import logging
 
-import astropy.io.votable
 from astropy.io import fits
 from astropy.table import Table
 from astropy.wcs import WCS
 import numpy as np
-from astropy.io.votable import table
-
 
 # This data_helper contains a number of short functions that are used across
 # a number of MeerKAT processes. Many of them assume a standard file structure and MeerKAT data labeling.
-from app_logging import logger
 
 
 def get_name(location):
@@ -54,18 +49,6 @@ def find_backgrounds(location, background=False, rms=False):
 # return folder_list
 
 
-def read_vot(vot_location):
-    try:
-        votable = table.parse(vot_location)
-        first_table = votable.get_first_table()
-        data = first_table.array
-    except ValueError as ve:
-        logging.exception(ve, 'Failed to read VOT table')
-        raise ve
-
-    return data
-
-
 def get_image(image_name):
     fits_file = fits.open(image_name)
     image_data = fits_file[0].data
@@ -79,13 +62,13 @@ def unify_coords(table, w):
     # This gets the world coordinate system and also translate the table values to pixel values
     lon = table['lon'].data
     lat = table['lat'].data
-    i = 0
-    test_arr = []
-    for x in lon:
-        test = np.array([lon[i], lat[i]], np.float_)
-        test_arr.append(test)
-        i = i + 1
-    positions = w.wcs_world2pix(test_arr, 2)
+    coordinate_array = []
+
+    for index, lon in enumerate(lon):
+        coord_pair = np.array([lon, lat[index]], np.float_)
+        coordinate_array.append(coord_pair)
+
+    positions = w.wcs_world2pix(coordinate_array, 2)
 
     return positions
 
@@ -104,36 +87,6 @@ def find_channels(location):
     channels = sorted(glob.glob(location + "*[0-9].fits"))
 
     return channels
-
-
-def get_vot_list(location, aegean=False):
-    if aegean:
-        vot_list = sorted(glob.glob(location + "Mom0_comp_catalogs/*Mosaic_Mom0_comp.vot"))
-    else:
-        vot_list = sorted(glob.glob(location + "Mosaic_Planes/G*/*full_table_cut.vot"))
-
-    return vot_list
-
-
-def get_vot_location(location):
-    folder_name = get_name(location)
-    upper_folder = location[0:-len(folder_name) - 2].rfind("/")
-    vot_location = location[0:upper_folder] + '/Mom0_comp_catalogs/'
-
-    return vot_location
-
-
-def load_neighbors(names, folder):
-    if folder[-1] != '/':
-        folder = folder + '/'
-
-    vot_mid = read_vot(folder + names[1] + '_Mosaic_Mom0_comp.vot')
-    vot_left = read_vot(folder + names[0] + '_Mosaic_Mom0_comp.vot')
-    vot_right = read_vot(folder + names[2] + '_Mosaic_Mom0_comp.vot')
-
-    vot_list = [vot_left, vot_mid, vot_right]
-
-    return vot_list
 
 
 # noinspection PyTypeChecker
@@ -169,16 +122,6 @@ def make_table(shape, aegean=False, table_type=[]):
     full_table = Table(data=np.zeros(shape, dtype=dtype))
 
     return full_table
-
-
-def get_chan_list(location):
-    channel_list = glob.glob(location + "phot_table*.npy")
-    return channel_list
-
-
-def load_phot_table(channel_name):
-    phot_table = np.load(channel_name, allow_pickle=True)
-    return phot_table
 
 
 def get_freq(location):

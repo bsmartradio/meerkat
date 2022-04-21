@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.stats import chisquare
-import argparse
 import common.data_helper as helper
+import common.phot_helper
 from common.rms_filter import rms_cut
-import common.image as image
+import models.image as image
 import logging
 
 
@@ -55,7 +55,7 @@ def begin_combine(path):
     data_cube = image.Image(path)
 
     for i in range(14):
-        phot_table = helper.load_phot_table(path + f'/phot_table_chan{i + 1:02d}.npy')
+        phot_table = common.phot_helper.load_phot_table(path + f'/phot_table_chan{i + 1:02d}.npy')
         phot_table['aperture_sum'] = correct_phot(phot_table['aperture_sum'])
         if i == 0:
             shape = len(phot_table['aperture_sum'])

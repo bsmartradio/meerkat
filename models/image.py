@@ -1,9 +1,9 @@
 from astropy.wcs import WCS
 
-from common.channel import Channel
+import common.vot_helper
+from models.channel import Channel
 import common.data_helper as helper
-from common.backgrounds import Backgrounds
-import logging
+from models.backgrounds import Backgrounds
 
 
 class Image:
@@ -23,8 +23,8 @@ class Image:
         rms_files = helper.find_backgrounds(path, rms=True)
         self.location = path
         self.folder_name = helper.get_name(path)
-        self.vot_location = helper.get_vot_location(path)
-        self.vot_table = helper.read_vot(self.vot_location + self.folder_name +
+        self.vot_location = common.vot_helper.get_vot_location(path)
+        self.vot_table = common.vot_helper.read_vot(self.vot_location + self.folder_name +
                                          '_Mosaic_Mom0_comp.vot')
 
         if not single_channel:

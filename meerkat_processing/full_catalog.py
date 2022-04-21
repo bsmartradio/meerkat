@@ -2,6 +2,9 @@ import glob
 import common.data_helper as helper
 import numpy as np
 
+import common.phot_helper as phot_helper
+import common.vot_helper as vot_helper
+
 
 def get_vots(location):
     vot_list = sorted(glob.glob(location + "*_Mosaic_Mom0_comp.vot+id"))
@@ -9,18 +12,18 @@ def get_vots(location):
 
         # Makes the initial table and then fills it in
         if i == 0:
-            table = helper.read_vot(vot_list[i])
+            table = vot_helper.read_vot(vot_list[i])
             shape = len(table.array)
             full_table = helper.make_table(shape, aegean=True, table_type=table.array)
 
-            for i in range(shape):
-                full_table[i] = table.array[i]
+            for j in range(shape):
+                full_table[j] = table.array[j]
 
         else:
-            table = helper.read_vot(vot_list[i])
+            table = vot_helper.read_vot(vot_list[i])
 
-            for i in range(len(table.array)):
-                full_table.add_row(table.array[i])
+            for j in range(len(table.array)):
+                full_table.add_row(table.array[j])
 
     return full_table
 
@@ -32,19 +35,19 @@ def get_all_phots(location):
 
         # Makes the initial table and then fills it in
         if i == 0:
-            table = helper.load_phot_table(phot_list[i])
+            table = phot_helper.load_phot_table(phot_list[i])
             shape = len(table.array)
             full_table = helper.make_table(shape)
 
-            for i in range(shape):
-                full_table[i] = table.array[i]
+            for j in range(shape):
+                full_table[j] = table.array[j]
 
         # Takes the other tables and concats them onto the end to create one single table
         else:
-            table = helper.load_phot_table(phot_list[i])
+            table = phot_helper.load_phot_table(phot_list[i])
 
-            for i in range(len(table.array)):
-                full_table.add_row(table.array[i])
+            for j in range(len(table.array)):
+                full_table.add_row(table.array[j])
 
     return full_table
 

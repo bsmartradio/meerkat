@@ -2,7 +2,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import common.data_checks as checks
-import common.image as image
 
 
 class TestChecks(TestCase):

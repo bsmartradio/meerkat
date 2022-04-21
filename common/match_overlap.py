@@ -17,68 +17,53 @@ def match_overlap(data_cubes, lon_range, all_overlapping_points):
 
     # This marks all the sources in the center image that overlap between the center and right image
     all_overlapping_points.center_right.overlap_coordinates, all_overlapping_points.center_right.overlap_index = \
-        n_checks.overlap_check(data_cubes[1].vot_table,lon_range[2],lon_range[1])
+        n_checks.overlap_check(data_cubes[1].vot_table, lon_range[2], lon_range[1])
 
     return all_overlapping_points
 
 
-def match_duplicates(neigh_cubes, min_res):
-    for n_index, lon in enumerate(neigh_cubes.left.overlap_coordinates[0]):
-        close_points = []
-        center_point_index = []
-        val_check = -1
-        lat = neigh_cubes.left.overlap_coordinates[1][n_index]
+def match_duplicates(neighbor_sources, phot_tables, min_res):
+    for neighbor_index, lon in enumerate(neighbor_sources.left.overlap_coordinates[0]):
+        lat = neighbor_sources.left.overlap_coordinates[1][neighbor_index]
 
-        for c_index, cent_lon in enumerate(neigh_cubes.center_left.overlap_coordinates[0]):
+        lat_difference = lat - neighbor_sources.center_left.overlap_coordinates[1][:]
+        lon_difference = lon - neighbor_sources.center_left.overlap_coordinates[0][:]
 
-            if lon - min_res <= cent_lon <= lon + min_res:
-                close_points.append([cent_lon, neigh_cubes.center_left.overlap_coordinates[1][c_index]])
-                center_point_index.append(c_index)
-                val_check = 0
+        minimum_difference = min(np.sqrt(np.square(lat_difference) + np.square(lon_difference)))
 
-        if close_points != [] and val_check != -1:
-            close_points = np.array(close_points)
-            minimum = min(np.sqrt(np.square(close_points[:, 0] - lon) + np.square(close_points[:, 1] - lat)))
+        if minimum_difference < min_res:
+            nearest_point = int(
+                np.where(np.sqrt(np.square(lat_difference) + np.square(lon_difference)) == minimum_difference)[0])
 
-            nearest_point_index = \
-                np.where(np.sqrt(np.square(close_points[:, 0] - lon) + np.square(close_points[:, 1]
-                                                                                 - lat)) == minimum)[0]
+            center_matched_index = neighbor_sources.center_left.overlap_index[0][0][nearest_point]
 
-            neigh_cubes.center_left.distance.append(minimum)
-            neigh_cubes.left.distance.append(minimum)
-            neigh_cubes.center_left.matched_index.append(center_point_index[nearest_point_index[0]])
-            neigh_cubes.left.matched_index.append(n_index)
+            # In the phot tables, fills in the ID to any point that has a match as well as the related cube field.
+            phot_tables[0]['overlap_id'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
+            phot_tables[0]['overlap_field'][neighbor_index] = phot_tables[1]['field'][center_matched_index]
 
-        else:
-            neigh_cubes.left.nomatch.append(n_index)
+            phot_tables[1]['overlap_id'][center_matched_index] = phot_tables[0]['id'][neighbor_index]
+            phot_tables[1]['overlap_field'][center_matched_index] = phot_tables[0]['field'][neighbor_index]
 
-    for n_index, lon in enumerate(neigh_cubes.right.overlap_coordinates[0]):
-        close_points = []
-        center_point_index = []
-        val_check = -1
-        lat = neigh_cubes.right.overlap_coordinates[1][n_index]
+    # Right table fill
+    for neighbor_index, lon in enumerate(neighbor_sources.right.overlap_coordinates[0]):
+        lat = neighbor_sources.right.overlap_coordinates[1][neighbor_index]
 
-        for c_index, cent_lon in enumerate(neigh_cubes.center_right.overlap_coordinates[0]):
+        lat_difference = lat - neighbor_sources.center_right.overlap_coordinates[1][:]
+        lon_difference = lon - neighbor_sources.center_right.overlap_coordinates[0][:]
 
-            if lon - min_res <= cent_lon <= lon + min_res:
-                close_points.append([cent_lon, neigh_cubes.center_right.overlap_coordinates[1][c_index]])
-                center_point_index.append(c_index)
-                val_check = 0
+        minimum_difference = min(np.sqrt(np.square(lat_difference) + np.square(lon_difference)))
 
-        if close_points != [] and val_check != -1:
-            close_points = np.array(close_points)
-            minimum = min(np.sqrt(np.square(close_points[:, 0] - lon) + np.square(close_points[:, 1] - lat)))
+        if minimum_difference < min_res:
+            nearest_point = int(
+                np.where(np.sqrt(np.square(lat_difference) + np.square(lon_difference)) == minimum_difference)[0])
 
-            nearest_point_index = \
-                np.where(np.sqrt(np.square(close_points[:, 0] - lon) + np.square(close_points[:, 1]
-                                                                                 - lat)) == minimum)[0]
+            center_matched_index = neighbor_sources.center_right.overlap_index[0][0][nearest_point]
 
-            neigh_cubes.center_right.distance.append(minimum)
-            neigh_cubes.right.distance.append(minimum)
-            neigh_cubes.center_right.matched_index.append(center_point_index[nearest_point_index[0]])
-            neigh_cubes.right.matched_index.append(n_index)
+            # In the phot tables, fills in the ID to any point that has a match as well as the related cube field.
+            phot_tables[2]['overlap_id'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
+            phot_tables[2]['overlap_field'][neighbor_index] = phot_tables[1]['field'][center_matched_index]
 
-        else:
-            neigh_cubes.right.nomatch.append(n_index)
+            phot_tables[1]['overlap_id'][center_matched_index] = phot_tables[2]['id'][neighbor_index]
+            phot_tables[1]['overlap_field'][center_matched_index] = phot_tables[2]['field'][neighbor_index]
 
-    return neigh_cubes
+    return neighbor_sources, phot_tables

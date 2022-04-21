@@ -1,4 +1,4 @@
-import common.image as image
+import models.image as image
 from unittest import TestCase
 
 

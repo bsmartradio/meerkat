@@ -15,6 +15,8 @@ import logging
 # Input required:
 # path: This is asking for the location where your data is stored. In our example, it wants test_data,
 # which contains the sub folders Mosaic_Planes and Mosaic_Mom0_catalogs.
+import common.vot_helper
+
 
 def get_vot_list(location, aegean=False):
     if aegean:
@@ -26,7 +28,7 @@ def get_vot_list(location, aegean=False):
 
 
 def assign(num, table_name, aegean=False):
-    table = helper.read_vot(table_name)
+    table = common.vot_helper.read_vot(table_name)
     table.mask = False
     id_present = False
 
@@ -80,7 +82,7 @@ def assign(num, table_name, aegean=False):
 
 
 def begin_assign(path):
-    vot_list = helper.get_vot_list(path)
+    vot_list = common.vot_helper.get_vot_list(path)
 
     last_id = None
 

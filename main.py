@@ -5,6 +5,7 @@ import meerkat_processing.assign_id as assign_id
 import meerkat_processing.combine_photometry as combine_photometry
 import meerkat_processing.full_catalog as full_catalog
 import meerkat_processing.process_neighbors as process_neighbors
+import meerkat_processing.create_plots as create_plots
 import os
 import logging
 from app_logging import logger
@@ -23,6 +24,7 @@ def start_photometry(args):
         try:
             logging.info('Beginning Photometry processing')
             photometry.process_photometry(path)
+
         except Exception as e:
             logging.exception(msg='Photometry exited without processing', exc_info=e)
     else:
@@ -134,6 +136,31 @@ def start_neighbors(args):
     else:
         logging.warning('Please check all three folder paths are valid to run Neighbors.')
 
+def start_plotting(args):
+    if args.folder_one is None or args.folder_two is None or args.folder_three is None:
+        logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
+                        "--folder_two='filepath', and --folder_three='filepath' \n"
+                        "Example:\n--folder_one='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
+                        "--folder_two='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
+                        "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
+        exit()
+
+    folder_one = args.folder_one
+    folder_two = args.folder_two
+    folder_three = args.folder_three
+    path_check_one = os.path.isdir(folder_one)
+    path_check_two = os.path.isdir(folder_two)
+    path_check_three = os.path.isdir(folder_three)
+
+    if path_check_one and path_check_two and path_check_three:
+        try:
+            logging.info('Beginning Plotting')
+            create_plots.begin_plotting(folder_one, folder_two, folder_three, all=False, bright=True)
+        except Exception as e:
+            logging.exception(msg='Exception in Plotting.', exc_info=e)
+    else:
+        logging.warning('Please check all three folder paths are valid to run Plotting.')
+
 
 if __name__ == '__main__':
 
@@ -183,6 +210,11 @@ if __name__ == '__main__':
     elif args.process.lower() == 'neighbors':
 
         start_neighbors(args)
+        exit()
+
+    elif args.process.lower() == 'plotting':
+
+        start_plotting(args)
         exit()
 
     else:

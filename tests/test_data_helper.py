@@ -5,8 +5,10 @@ from astropy.wcs import WCS
 
 import common.data_checks
 import common.data_helper as helper
-import common.image as image
+import models.image as image
 import numpy as np
+
+import common.vot_helper
 
 
 class TestChannel(TestCase):
@@ -35,23 +37,6 @@ class TestChannel(TestCase):
             for background in background_list:
                 self.assertIn('bkg.fits', background)
 
-    def test_read_vot(self):
-        mock_array = MagicMock()
-        mock_array.data = ['1']
-
-        mock_table = MagicMock()
-        mock_table.array = mock_array
-
-        mock_vot_table = MagicMock()
-        mock_vot_table.get_first_table.return_value = mock_table
-
-        with patch('astropy.io.votable.table.parse', return_value=mock_vot_table):
-            vot = helper.read_vot('/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
-
-            self.assertIsNotNone(vot)
-            self.assertIsNotNone(vot.data)
-            self.assertTrue(mock_vot_table.get_first_table.called)
-            self.assertEquals(mock_array.data, vot.data)
 
     def test_get_image(self):
 
@@ -62,9 +47,9 @@ class TestChannel(TestCase):
         self.assertTrue(image[1]['SIMPLE'])
 
     def test_unify_coords(self):
-        vot_location = helper.get_vot_location(self.location)
+        vot_location = common.vot_helper.get_vot_location(self.location)
         name = helper.get_name(self.location)
-        vot = helper.read_vot(vot_location + name + '_Mosaic_Mom0_comp.vot')
+        vot = common.vot_helper.read_vot(vot_location + name + '_Mosaic_Mom0_comp.vot')
         files = helper.find_channels(self.location)
         channels = image.Image.get_channels(self, files[0])
         w = WCS(channels[0].header, naxis=2)
@@ -94,22 +79,10 @@ class TestChannel(TestCase):
             self.assertEqual('chan', channel[-11:-7])
             self.assertEqual('.fits', channel[-5:])
 
-    def test_get_vot_list(self):
-        vot_list = helper.get_vot_list(self.location, aegean=True)
-
-        for vot in vot_list:
-            self.assertIn('.vot', vot)
-
-    def test_get_vot_location(self):
-        vot_location = helper.get_vot_location(self.location)
-
-        self.assertIs(type(vot_location), str)
-        self.assertIn('Mom0_comp_catalogs', vot_location)
-
     def test_load_neighbors(self):
         names = ['G279.5-0.5IFx', 'G282.5-0.5IFx', 'G285.5-0.5IFx']
         folder = '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs'
-        neighbors = helper.load_neighbors(names, folder)
+        neighbors = common.vot_helper.load_neighbors(names, folder)
 
         self.assertIsNotNone(neighbors)
         self.assertIs(3, len(neighbors))
@@ -121,7 +94,7 @@ class TestChannel(TestCase):
                                   ('chan01', 'float64')])
         example_no_id_dtype = np.dtype([('field', 'object'),
                                         ('chan01', 'float64')])
-        vot = helper.read_vot(
+        vot = common.vot_helper.read_vot(
             '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
         small_table_aegean = helper.make_table(small_shape, aegean=True, table_type=vot)
         large_table_aegean = helper.make_table(large_shape, aegean=True, table_type=vot)

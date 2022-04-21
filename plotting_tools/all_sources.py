@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 
 
-def plot(cubes, show=False, save=True):
+def plot(cubes, show=True, save=False):
     plt.rcParams["axes.grid"] = False
     plt.rcParams['xtick.labelsize'] = 8
     plt.rcParams['ytick.labelsize'] = 8

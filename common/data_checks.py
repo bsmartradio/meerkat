@@ -4,6 +4,8 @@ import common.data_helper as helper
 import numpy as np
 import logging
 
+import common.vot_helper
+
 
 def file_check(location):
     channels = helper.find_channels(location)
@@ -91,7 +93,7 @@ def process_channels_check(location, channels, total_channels, backgrounds_list,
 def check_required_files_exist(location):
     # Read in full data cube and the vot table
     name = helper.get_name(location)
-    vot_location = helper.get_vot_location(location)
+    vot_location = common.vot_helper.get_vot_location(location)
 
     channels_list = sorted(glob.glob(location + "/*Mosaic_chan[0-9][0-9].fits"))
     vot_table = sorted(glob.glob(vot_location + name + '_Mosaic_Mom0_comp.vot'))

@@ -12,7 +12,7 @@ import os
 from functools import partial
 from photutils import EllipticalAperture, aperture_photometry
 import time
-import common.image as image
+import models.image as image
 import common.data_checks as checks
 import multiprocessing as mp
 import numpy as np
