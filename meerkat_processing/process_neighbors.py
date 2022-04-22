@@ -5,9 +5,8 @@ import models.image as image
 import common.neighbor_checks as n_checks
 import common.match_overlap as n_match
 import models.neighbors as build
-from plotting_tools import bright_sources
 import common.match_overlap as match
-import logging
+
 
 # The purpose of this program is to take neighboring cubes from MeerKAT and the Aegean
 # source catalogues and identify overlapping sources, then check how well the sources

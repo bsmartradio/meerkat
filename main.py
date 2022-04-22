@@ -175,11 +175,9 @@ if __name__ == '__main__':
         start_full_catalog(args)
         exit()
     elif args.process.lower() == 'neighbors':
-
         start_neighbors(args)
         exit()
     elif args.process.lower() == 'plotting':
-
         start_plotting(args)
         exit()
     else:
