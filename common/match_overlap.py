@@ -2,24 +2,24 @@ import common.neighbor_checks as n_checks
 import numpy as np
 
 
-def match_overlap(data_cubes, lon_range, all_overlapping_points):
+def match_overlap(data_cubes, lon_range, neighbor_sources):
     # This marks all the sources in the left image that overlap between the center and left image
-    all_overlapping_points.left.overlap_coordinates, all_overlapping_points.left.overlap_index = \
+    neighbor_sources.left.overlap_coordinates, neighbor_sources.left.overlap_index = \
         n_checks.overlap_check(data_cubes[0].vot_table, lon_range[1], lon_range[0])
 
     # This marks all the sources in the center image that overlap between the center and left image
-    all_overlapping_points.center_left.overlap_coordinates, all_overlapping_points.center_left.overlap_index = \
+    neighbor_sources.center_left.overlap_coordinates, neighbor_sources.center_left.overlap_index = \
         n_checks.overlap_check(data_cubes[1].vot_table, lon_range[0], lon_range[1])
 
     # This marks all the sources in the right image that overlap between the center and right image
-    all_overlapping_points.right.overlap_coordinates, all_overlapping_points.right.overlap_index = \
+    neighbor_sources.right.overlap_coordinates, neighbor_sources.right.overlap_index = \
         n_checks.overlap_check(data_cubes[2].vot_table, lon_range[1], lon_range[2])
 
     # This marks all the sources in the center image that overlap between the center and right image
-    all_overlapping_points.center_right.overlap_coordinates, all_overlapping_points.center_right.overlap_index = \
+    neighbor_sources.center_right.overlap_coordinates, neighbor_sources.center_right.overlap_index = \
         n_checks.overlap_check(data_cubes[1].vot_table, lon_range[2], lon_range[1])
 
-    return all_overlapping_points
+    return neighbor_sources
 
 
 def match_duplicates(neighbor_sources, phot_tables, min_res):

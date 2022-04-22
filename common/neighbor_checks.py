@@ -36,7 +36,7 @@ def check_overlap(table, full_table, location, name):
             a_out, b_out = ellipse_polyline(ellipses)
             x, y = intersections(a_out, b_out)
 
-            if x != []:
+            if x:
                 full_table['overlap'][i] = True
                 full_table['overlap'][j] = True
                 plt.plot(x, y, "o")

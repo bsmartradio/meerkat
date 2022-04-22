@@ -39,6 +39,7 @@ class TestChannel(TestCase):
         with patch('astropy.io.fits.open', return_value=mock_list):
             image, header = helper.get_image(self.name)
             self.assertIsNotNone(image)
+            self.assertEquals('mock_fits_file', image)
             self.assertIsNotNone(header)
             self.assertTrue(header['SIMPLE'])
             self.assertTrue(mock_list.close.called)
@@ -85,21 +86,32 @@ class TestChannel(TestCase):
             self.assertEqual('.fits', channel[-5:])
 
 
-    def test_make_table(self):
-        small_shape = 10
-        large_shape = 500
-        example_dtype = np.dtype([('id', 'int32'), ('field', 'object'),
-                                  ('chan01', 'float64')])
-        example_no_id_dtype = np.dtype([('field', 'object'),
-                                        ('chan01', 'float64')])
-        vot = common.vot_helper.read_vot(
-            '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs/G282.5-0.5IFx_Mosaic_Mom0_comp.vot')
-        small_table_aegean = helper.make_table(small_shape, aegean=True, table_type=vot)
-        large_table_aegean = helper.make_table(large_shape, aegean=True, table_type=vot)
-        small_table = helper.make_table(small_shape)
-        large_table = helper.make_table(large_shape)
+    def test_make_table_aegean_no_id(self):
+        shape = 10
+        mock_vot = MagicMock()
+        mock_vot.dtype = np.dtype([('field', 'object'),('chan01', 'float64')])
 
-        self.assertEquals(small_shape, len(small_table))
-        self.assertEquals(large_shape, len(large_table))
+        table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
+
+        self.assertEquals(shape, len(table_aegean))
+        self.assertIn('id', table_aegean.dtype.names)
+
+    def test_make_table(self):
+        shape = 10
+        mock_vot = MagicMock()
+        mock_vot.dtype = np.dtype([('id', 'int'),('field', 'object'),('chan01', 'float64')])
+
+        table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
+
+        self.assertEquals(shape, len(table_aegean))
+        self.assertIn('id', table_aegean.dtype.names)
+
+    def test_make_table_aegean_with_id(self):
+        shape = 10
+
+        table= helper.make_table(shape)
+
+        self.assertEquals(shape, len(table))
+        self.assertEquals(38, len(table.dtype))
 
 
