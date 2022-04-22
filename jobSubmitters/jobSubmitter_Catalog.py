@@ -1,17 +1,14 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
-import os
 import subprocess
 
 # =============================================================================
 # Top layer python script to set multiple jobs going on the cluster. 
 # =============================================================================
 
-filepath = '/beegfs/car/bsmart/MeerKAT/Mosaic_Planes/'
-qsub_command = """qsub   -N catalogJob /beegfs/car/bsmart/MeerKAT/run_catalog.sh"""
-print(qsub_command)
+filepath = '/Example/MeerKAT/Mosaic_Planes/'
+qsub_command = """qsub   -N catalogJob /Example/MeerKAT/run_catalog.sh"""
+
 print('Submitting job')
+
 exit_status = subprocess.call(qsub_command, shell=True)
 
 if exit_status is 1:
