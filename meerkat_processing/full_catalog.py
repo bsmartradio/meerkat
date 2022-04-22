@@ -1,7 +1,6 @@
 import glob
 import common.data_helper as helper
 import numpy as np
-
 import common.phot_helper as phot_helper
 import common.vot_helper as vot_helper
 
@@ -55,7 +54,7 @@ def get_all_phots(location):
 def begin_full_catalog(path):
 
     if path[-1] != '/':
-        path = path+'/'
+        path = path + '/'
 
     vot_location = path + 'Mom0_comp_catalogs/'
     phot_location = path + 'Mosaic_Planes/'

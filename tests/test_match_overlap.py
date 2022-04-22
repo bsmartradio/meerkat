@@ -1,6 +1,4 @@
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
-
 import common.match_overlap
 import common.data_helper as helper
 import numpy as np
@@ -24,7 +22,6 @@ class TestMatchOverlap(TestCase):
         mock_phot_tables[0]['id']= 1
         mock_phot_tables[1]['id'] = 2
         mock_phot_tables[2]['id'] = 3
-
         mock_min_res = .3
 
         neighbor_sources, phot_tables = common.match_overlap.match_duplicates(mock_neighbor_sources,

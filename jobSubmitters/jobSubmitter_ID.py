@@ -11,8 +11,9 @@ import subprocess
 filepath = '/Example/Mosaic_Planes/'
 
 qsub_command = """qsub   -N idJob /Example/MeerKAT/run_id.sh"""
-print(qsub_command)
+
 print('Submitting job')
+
 exit_status = subprocess.call(qsub_command, shell=True)
 
 if exit_status is 1:

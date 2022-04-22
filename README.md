@@ -3,7 +3,7 @@
 Supporting programs for the creation of an SED catalog for a MeerKAT data cubes.
 These programs were developed in [Pycharm community edition.](https://www.jetbrains.com/pycharm/download/#section=mac)
 
-###Programs required:
+### Programs required:
 - phython 3.7
 - [Aegean Processing Package](https://github.com/PaulHancock/Aegean)
 - astropy
@@ -24,7 +24,7 @@ and meerkat data cubes to be in the following locations:
 
 Make sure you have both Mosaic_Planes and the Mom0_comp_catalogs in the same location.
 
-###How to use
+### How to use
 
 To run any of the meerkat processing routines, you need to run main and pass it the desired process.
 You then must also supply any supporting arguments. 
@@ -52,7 +52,7 @@ For example, to run photometry you would pass the following arguments in:
 
     python3 main.py --process='photometry' --folder_loc='Path'
 
-###Processes in this package
+### Processes in this package
 
 - __bane_processing__ - This is required if none of the individual mosaic_planes have backgrounds and just the channels and 
 Aegean vot files have been downloaded. This will run bane on all the individual channels, creating background and rms files.
@@ -101,7 +101,7 @@ Due to the high number of sources, it is better to plot only the sources present
 present only in one for visibility.
 
 
-###Recommended processing order:
+### Recommended processing order:
 
 If starting with just the aegean vot files and mosaic plane fles, the following order is recommended:
 
@@ -113,7 +113,7 @@ If starting with just the aegean vot files and mosaic plane fles, the following 
 - full_catalog
 - plotting
 
-###Notes:
+### Notes:
 
 Most of these programs are expected to be run on an HPC due to the time it takes to process 
 and the multiprocessing requirements. Specifically, photometry and bane are time intensive.

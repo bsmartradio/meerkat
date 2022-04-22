@@ -13,8 +13,8 @@ for filename in f:
     folder = filepath + filename + '/'
 
     qsub_command = """qsub  -v FILENAME='{0}' -N combiJob /Example/MeerKAT/run_combi.sh""".format(folder)
-    print(qsub_command)
     print('Submitting job')
+
     exit_status = subprocess.call(qsub_command, shell=True)
 
     if exit_status is 1:

@@ -15,7 +15,6 @@ def file_check(location):
 
 
 def check_filenames(channels, location):
-
     for single_channel in channels:
 
         for chan_num in range(9):
@@ -29,13 +28,12 @@ def check_filenames(channels, location):
                 os.rename(location + single_channel, new_filename)
 
                 logging.info(new_filename.replace(("chan" + "{:01d}".format(chan_num + 1) + '.'),
-                                           ("chan" + "{:02d}".format(chan_num + 1) + '.'), 1))
+                                                  ("chan" + "{:02d}".format(chan_num + 1) + '.'), 1))
 
 
 def process_channels_check(location, channels, total_channels, backgrounds_list, phot_lookup=True):
     if phot_lookup:
         phot_exist = os.path.isfile(location + 'phot_list.txt')
-
     else:
         phot_exist = False
 
@@ -52,7 +50,6 @@ def process_channels_check(location, channels, total_channels, backgrounds_list,
 
             if channel_exists_check:
                 logging.info('Yes')
-
             else:
                 logging.info('No')
 
@@ -66,14 +63,11 @@ def process_channels_check(location, channels, total_channels, backgrounds_list,
                 if not check_values and bck_file:
                     existing_channels.append(i)
                     logging.info(f'Channel {i + 1} has values and valid background, will process photometry')
-
                 elif not bck_file and check_values:
                     logging.warning(f'Missing background file for {i + 1} channel. Run auto_bane to make file.')
                     logging.warning(f"Skipping file {location} due to missing files")
-
                 elif bck_file and check_values:
                     logging.warning(f'No values for {i + 1} channel')
-
                 else:
                     logging.warning(f'No values for {i + 1} channel and missing background file. '
                                     f'Run auto_bane to make file.')

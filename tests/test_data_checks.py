@@ -15,8 +15,7 @@ class TestChecks(TestCase):
         channels_list = ['_chan01.fits', '_chan02.fits', '_chan03.fits', '_chan04.fits', '_chan05.fits', '_chan06.fits',
                          '_chan07.fits', '_chan08.fits', '_chan09.fits', '_chan10.fits', '_chan11.fits', '_chan12.fits',
                          '_chan13.fits', '_chan14.fits']
-        mock_image=np.array([[[1],[2],[3]], [[1],[2],[3]]])
-
+        mock_image = np.array([[[1], [2], [3]], [[1], [2], [3]]])
 
         with patch('os.path.isfile', return_value=True):
             with patch('common.data_helper.get_image', return_value=mock_image):

@@ -1,11 +1,8 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from astropy.wcs import WCS
-import common.data_checks
 import common.data_helper as helper
 import numpy as np
-
-import common.vot_helper
 
 
 class TestChannel(TestCase):
@@ -43,7 +40,6 @@ class TestChannel(TestCase):
             self.assertIsNotNone(header)
             self.assertTrue(header['SIMPLE'])
             self.assertTrue(mock_list.close.called)
-
 
     def test_unify_coords(self):
         mock_lon = MagicMock()
@@ -85,11 +81,10 @@ class TestChannel(TestCase):
             self.assertEqual('chan', channel[-11:-7])
             self.assertEqual('.fits', channel[-5:])
 
-
     def test_make_table_aegean_no_id(self):
         shape = 10
         mock_vot = MagicMock()
-        mock_vot.dtype = np.dtype([('field', 'object'),('chan01', 'float64')])
+        mock_vot.dtype = np.dtype([('field', 'object'), ('chan01', 'float64')])
 
         table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
 
@@ -99,7 +94,7 @@ class TestChannel(TestCase):
     def test_make_table(self):
         shape = 10
         mock_vot = MagicMock()
-        mock_vot.dtype = np.dtype([('id', 'int'),('field', 'object'),('chan01', 'float64')])
+        mock_vot.dtype = np.dtype([('id', 'int'), ('field', 'object'), ('chan01', 'float64')])
 
         table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
 
@@ -109,9 +104,7 @@ class TestChannel(TestCase):
     def test_make_table_aegean_with_id(self):
         shape = 10
 
-        table= helper.make_table(shape)
+        table = helper.make_table(shape)
 
         self.assertEquals(shape, len(table))
         self.assertEquals(38, len(table.dtype))
-
-

@@ -26,6 +26,7 @@ class TestChannel(TestCase):
     def test_get_vot_list(self):
         mock_vot_return = ['Mosaic_Mom0_comp1.vot', 'Mosaic_Mom0_comp2.vot']
         mock_location = 'test/test/'
+
         with patch('glob.glob', return_value=mock_vot_return):
             vot_list = vot_helper.get_vot_list(mock_location, aegean=True)
 

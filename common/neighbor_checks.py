@@ -48,22 +48,20 @@ def check_overlap(table, full_table, location, name):
 
 
 def fit_deviation(valuesOne, valuesTwo):
-
     point_one = np.array([0.0, 0.0])
     point_two = np.array([10.0, 10.0])
     point_three = np.empty([len(valuesOne), 2])
     point_three[:, 0] = valuesOne
     point_three[:, 1] = valuesTwo
-    matchedArr = np.cross(point_two - point_one, point_three - point_one) / norm(point_two - point_one)
 
-    return matchedArr
+    return np.cross(point_two - point_one, point_three - point_one) / norm(point_two - point_one)
 
 
 def intersections(a, b):
     ea = LinearRing(a)
     eb = LinearRing(b)
-    # print(ea,eb)
     mp = ea.intersection(eb)
+
     if mp.is_empty:
         return [], []
     elif mp.geom_type == 'Point':
@@ -88,16 +86,13 @@ def overlap_check(neighbor_vot, center_lon, neighbor_lon):
         index = np.where(neighbor_vot['lon'] < max(center_lon))
         lat = neighbor_vot['lat'][np.where(neighbor_vot['lon'] < max(center_lon))]
 
-
-    overlap_index.append(index)
-    overlap_coords=np.array([lon,lat])
-
-    return overlap_coords, overlap_index
+    return np.array([lon, lat]), overlap_index.append(index)
 
 
 def check_edge_points(data_cubes, phot_tables, lon_range):
     for i in range(3):
         for index, j in enumerate(data_cubes[i].vot_table['lon']):
+
             if j <= (lon_range[i, 0] + .01):
                 phot_tables[i]['edge'][index] = True
             elif j >= (lon_range[i, 1] - .01):

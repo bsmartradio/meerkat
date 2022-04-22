@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 import common.data_helper as helper
 import numpy as np
 
+
 class TestRmsFilter(TestCase):
 
     def test_rms_filter(self):

@@ -1,8 +1,6 @@
 import glob
 import logging
-
 from astropy.io.votable import table
-
 from common.data_helper import get_name
 
 
@@ -12,7 +10,7 @@ def read_vot(vot_location):
         first_table = votable.get_first_table()
         data = first_table.array
     except ValueError as ve:
-        logging.exception(ve, 'Failed to read VOT table')
+        logging.exception(msg='Failed to read VOT table', exc_info=ve)
         raise ve
 
     return data
@@ -37,12 +35,10 @@ def get_vot_location(location):
 
 def load_neighbors(names, folder):
     if folder[-1] != '/':
-        folder = folder + '/'
+        folder += '/'
 
     vot_mid = read_vot(folder + names[1] + '_Mosaic_Mom0_comp.vot')
     vot_left = read_vot(folder + names[0] + '_Mosaic_Mom0_comp.vot')
     vot_right = read_vot(folder + names[2] + '_Mosaic_Mom0_comp.vot')
 
-    vot_list = [vot_left, vot_mid, vot_right]
-
-    return vot_list
+    return [vot_left, vot_mid, vot_right]

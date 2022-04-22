@@ -14,8 +14,8 @@ import common.vot_helper
 # lowest longitude first and work its way up.
 
 # Input required:
-# path: This is asking for the location where your data is stored. In our example, it wants test_data,
-# which contains the sub folders Mosaic_Planes and Mosaic_Mom0_catalogs.
+# path: This is asking for the location where your data is stored. In our example, Example/test_data/ it wants
+# the location of test_data as that folder should contain Mosaic_Planes and Mom0_comp_catalogs.
 
 
 def get_vot_list(location, aegean=False):
@@ -34,6 +34,7 @@ def assign(num, table_name, aegean=False):
 
     if aegean:
         shape = len(table['source'])
+
         if not table['id'].any():
             labeled_table = helper.make_table(shape, aegean=True, table_type=table)
         else:
@@ -87,7 +88,6 @@ def assign(num, table_name, aegean=False):
 
 def begin_assign(path):
     phot_list = get_vot_list(path)
-
     last_id = None
 
     for i, phot_name in enumerate(phot_list):

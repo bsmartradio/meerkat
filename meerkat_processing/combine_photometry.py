@@ -7,6 +7,16 @@ import models.image as image
 import logging
 
 
+# Combine photometry takes all the phot_table_chan*.npy files and combines the tables into a single table
+# for the specific data cube. Several additional columns are added to allow for further storing information
+# about the specific data cubes. The added columns are id, field, edge, overlap, overlap_id, si_m, si_m_point_num,
+# xi, overlap_mask, and pvalue which are used in other programs.
+
+# Input required:
+# path: This is asking for the location where your data is stored. In our example, Example/test_data/ it wants
+# the location of test_data as that folder should contain Mosaic_Planes and Mom0_comp_catalogs.
+
+
 def calc_xi_squared(spec_index_arr, spec_index_fit):
     xi = chisquare(np.float64(spec_index_arr), f_exp=np.float64(spec_index_fit))
 
@@ -68,7 +78,6 @@ def begin_combine(path):
         else:
             full_table[f'chan{i + 1:02d}'] = phot_table['aperture_sum']
             full_table[f'chan{i + 1:02d}' + 'err'] = phot_table['aperture_sum_err']
-
 
     full_table.write(f'{path + data_cube.folder_name}_full_table.vot', format='votable', overwrite=True)
     np.save(f'{path + data_cube.folder_name}_full_table', full_table, allow_pickle=True, fix_imports=True)

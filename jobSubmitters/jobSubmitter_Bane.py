@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import subprocess
 
@@ -17,8 +14,9 @@ for filename in f:
     folder = filepath + filename + '/'
 
     qsub_command = """qsub  -v FILENAME='{0}' -N baneJob /Example/MeerKAT/run_bane.sh""".format(folder)
-    print(qsub_command)
+
     print('Submitting job')
+
     exit_status = subprocess.call(qsub_command, shell=True)
 
     if exit_status is 1:

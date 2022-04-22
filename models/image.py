@@ -1,5 +1,4 @@
 from astropy.wcs import WCS
-
 import common.vot_helper
 from models.channel import Channel
 import common.data_helper as helper
@@ -21,11 +20,11 @@ class Image:
         files = helper.find_channels(path)
         background_files = helper.find_backgrounds(path, background=True)
         rms_files = helper.find_backgrounds(path, rms=True)
+
         self.location = path
         self.folder_name = helper.get_name(path)
         self.vot_location = common.vot_helper.get_vot_location(path)
-        self.vot_table = common.vot_helper.read_vot(self.vot_location + self.folder_name +
-                                         '_Mosaic_Mom0_comp.vot')
+        self.vot_table = common.vot_helper.read_vot(self.vot_location + self.folder_name + '_Mosaic_Mom0_comp.vot')
 
         if not single_channel:
             self.channels = self.get_channels(files)
@@ -40,7 +39,8 @@ class Image:
         w = WCS(self.channels[0].header, naxis=2)
         self.positions = helper.unify_coords(self.vot_table, w)
 
-    def get_channels(self, files):
+    @staticmethod
+    def get_channels(files):
         cube = []
 
         if type(files) is list:
@@ -53,7 +53,8 @@ class Image:
 
         return cube
 
-    def get_backgrounds(self, files):
+    @staticmethod
+    def get_backgrounds(files):
         cube_backgrounds = []
 
         if type(files) is list:

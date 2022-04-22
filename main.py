@@ -9,13 +9,11 @@ import meerkat_processing.create_plots as create_plots
 import os
 import logging
 from app_logging import logger
+from common.main_checks import check_folder_loc, check_main_folder, check_multi_folders
 
 
 def start_photometry(args):
-    if args.folder_loc is None:
-        logging.warning('Must have folder location.\nPlease include --folder_loc="filepath/foldername" argument.\n'
-                        'Example: --folder_loc="Example/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
-        exit()
+    check_folder_loc(args)
 
     path = args.folder_loc
     path_check = os.path.isdir(path)
@@ -32,11 +30,7 @@ def start_photometry(args):
 
 
 def start_bane(args):
-    if args.folder_loc is None:
-        logging.warning(
-            'Must have folder location. Please include --folder_loc="filepath/foldername" argument')
-        logging.warning('Example: --folder_loc="Example/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
-        exit()
+    check_folder_loc(args)
 
     path = args.folder_loc
     path_check = os.path.isdir(path)
@@ -53,11 +47,7 @@ def start_bane(args):
 
 
 def start_combine(args):
-    if args.folder_loc is None:
-        logging.warning(
-            "Must have folder location. Please include --folder_loc='filepath/foldername'")
-        logging.warning("Example: --folder_loc='Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
-        exit()
+    check_folder_loc(args)
 
     path = args.folder_loc
     path_check = os.path.isdir(path)
@@ -73,11 +63,7 @@ def start_combine(args):
 
 
 def start_assign_id(args):
-    if args.main_folder is None:
-        logging.warning("Must have main folder location containing all processed cube folders. Please include"
-                        " --main_folder='filepath'")
-        logging.warning("Example: --main_folder='Example/test_data/Mosaic_Planes/'")
-        exit()
+    check_main_folder(args)
 
     path = args.main_folder
     path_check = os.path.isdir(path)
@@ -91,12 +77,9 @@ def start_assign_id(args):
     else:
         logging.warning('--main_folder does not contain a valid filepath')
 
+
 def start_full_catalog(args):
-    if args.main_folder is None:
-        logging.warning("Must have main folder location containing all processed cube folders. \n"
-                        "Please include --main_folder='filepath' \n"
-                        "Example: \n--main_folder='Example/Documents/test_data/Mosaic_Planes/'")
-        exit()
+    check_main_folder(args)
 
     path = args.main_folder
     path_check = os.path.isdir(path)
@@ -112,13 +95,7 @@ def start_full_catalog(args):
 
 
 def start_neighbors(args):
-    if args.folder_one is None or args.folder_two is None or args.folder_three is None:
-        logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
-                        "--folder_two='filepath', and --folder_three='filepath' \n"
-                        "Example:\n--folder_one='/Example/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
-                        "--folder_two='/Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
-                        "--folder_three='/Example/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
-        exit()
+    check_multi_folders(args)
 
     folder_one = args.folder_one
     folder_two = args.folder_two
@@ -136,14 +113,9 @@ def start_neighbors(args):
     else:
         logging.warning('Please check all three folder paths are valid to run Neighbors.')
 
+
 def start_plotting(args):
-    if args.folder_one is None or args.folder_two is None or args.folder_three is None:
-        logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
-                        "--folder_two='filepath', and --folder_three='filepath' \n"
-                        "Example:\n--folder_one='/Example/test_Data/Mosaic_Planes/G279.5-0.5IFx/'\n"
-                        "--folder_two='/Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
-                        "--folder_three='/Example/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
-        exit()
+    check_multi_folders(args)
 
     folder_one = args.folder_one
     folder_two = args.folder_two
@@ -182,7 +154,7 @@ if __name__ == '__main__':
 
     if not args.process:
         logging.warning('Please indicate which process you will be running using --process. \n'
-                        'Avaliable processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'
+                        'Available processes: Bane, Photometry, Combine, Full_Catalog, Neighbors, or Assign_Id. \nBane,'
                         ' Photometry and Combine require --folder_loc. \nNeighbors requires '
                         '--folder_one, --folder_two, and --folder_three. \nAssign_ID and '
                         'Full_Catalog require --main_folder.')
@@ -190,33 +162,26 @@ if __name__ == '__main__':
     if args.process.lower() == 'photometry':
         start_photometry(args)
         exit()
-
     elif args.process.lower() == 'bane':
         start_bane(args)
         exit()
-
     elif args.process.lower() == 'combine':
         start_combine(args)
         exit()
-
     elif args.process.lower() == 'assign_id':
         start_assign_id(args)
         exit()
-
     elif args.process.lower() == 'full_catalog':
         start_full_catalog(args)
         exit()
-
     elif args.process.lower() == 'neighbors':
 
         start_neighbors(args)
         exit()
-
     elif args.process.lower() == 'plotting':
 
         start_plotting(args)
         exit()
-
     else:
         logging.warning('Input for --process is not recognized. Please check argument and choose from the following '
                         'list:\nbane, photometry, combine, full_catalog, assign_id, neighbors.')

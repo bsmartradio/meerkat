@@ -1,13 +1,3 @@
-#
-# This file is part of the MeerKAT Processing and Data tools
-# Author: Brianna Smart
-#
-#
-# This program is meant to be used as part of the MeerKAT data reduction and processing pipeline.
-# Data is expected to be contained in folders with the same structure as the MeerKAT survey
-#
-# Input example: python3 photometry.py --folder_loc"/Usr/example_data/Mosaic_Planes/G385_"
-
 import os
 from functools import partial
 from photutils import EllipticalAperture, aperture_photometry
@@ -45,9 +35,7 @@ def aperture_phot(path, channel_number):
 
     logging.info("The time it took to process one channel's photometry is :", end - start)
 
-    finished = f'Channel {channel_number + 1} processed'
-
-    return finished
+    return f'Channel {channel_number + 1} processed'
 
 
 def process_photometry(path):

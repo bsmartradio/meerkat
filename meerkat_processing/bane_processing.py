@@ -7,6 +7,13 @@ import common.data_helper as helper
 
 # This program looks for individual Mosaic Planes in a cube folder and runs the Bane background processing from the
 # Aegean data-reduction pipeline.
+# Input required:
+
+# Input required:
+# path: This is asking for the location where your data is stored. In our example, Example/test_data/ it wants
+# the location of test_data as that folder should contain Mosaic_Planes and Mom0_comp_catalogs.
+
+
 def run_bane(location, file):
     logging.info(f'File location {location + file}')
     cmd = ['BANE', location + file]

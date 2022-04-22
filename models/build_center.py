@@ -1,4 +1,4 @@
 class BuildCenter:
+    overlap_coordinates = []
     overlap_index = []
-    matched_index = []
     distance = []

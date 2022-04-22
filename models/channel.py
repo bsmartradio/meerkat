@@ -25,5 +25,5 @@ class Channel:
             frequency = header['OBSFREQ']
             return frequency
 
-        except KeyError:
-            logging.warning('Channel has no frequency value')
+        except KeyError as ke:
+            logging.warning(msg='Channel has no frequency value', exc_info=ke)

@@ -1,13 +1,12 @@
 import glob
-
 from astropy.io import fits
 from astropy.table import Table
 from astropy.wcs import WCS
 import numpy as np
 
+
 # This data_helper contains a number of short functions that are used across
 # a number of MeerKAT processes. Many of them assume a standard file structure and MeerKAT data labeling.
-
 
 def get_name(location):
     if not location:
@@ -44,11 +43,6 @@ def find_backgrounds(location, background=False, rms=False):
     return found_list
 
 
-# def get_list(location):
-# folder_list = sorted(glob.glob(location + "G[0-9][0-9][0-9]*"))
-# return folder_list
-
-
 def get_image(image_name):
     fits_file = fits.open(image_name)
     image_data = fits_file[0].data
@@ -83,14 +77,13 @@ def minmax_coord(header):
 
 def find_channels(location):
     if location[-1] != '/':
-        location = location + '/'
+        location += '/'
     channels = sorted(glob.glob(location + "*[0-9].fits"))
 
     return channels
 
 
-def make_table(shape, aegean=False, table_type=[]):
-
+def make_table(shape, aegean=False, table_type=None):
     if aegean and not 'id' in table_type.dtype.names:
         dtype = np.dtype([('id', 'int32')] + table_type.dtype.descr)
 
@@ -118,14 +111,12 @@ def make_table(shape, aegean=False, table_type=[]):
                  ('overlap', 'float64'), ('overlap_field', 'object'),
                  ('edge', 'bool'), ('overlap_mask', 'bool')]
 
-    full_table = Table(data=np.zeros(shape, dtype=dtype))
-
-    return full_table
+    return Table(data=np.zeros(shape, dtype=dtype))
 
 
 def get_freq(location):
     if location[-1] != '/':
         location = location + '/'
     freq_loc = glob.glob(location + "*freq_list*.npy")
-    freq_list = np.load(freq_loc[0])
-    return freq_list
+
+    return np.load(freq_loc[0])
