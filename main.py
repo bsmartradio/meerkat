@@ -14,7 +14,7 @@ from app_logging import logger
 def start_photometry(args):
     if args.folder_loc is None:
         logging.warning('Must have folder location.\nPlease include --folder_loc="filepath/foldername" argument.\n'
-                        'Example: --folder_loc="/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
+                        'Example: --folder_loc="Example/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
         exit()
 
     path = args.folder_loc
@@ -35,7 +35,7 @@ def start_bane(args):
     if args.folder_loc is None:
         logging.warning(
             'Must have folder location. Please include --folder_loc="filepath/foldername" argument')
-        logging.warning('Example: --folder_loc="/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
+        logging.warning('Example: --folder_loc="Example/test_data/Mosaic_Planes/G282.5-0.5IFx/"')
         exit()
 
     path = args.folder_loc
@@ -56,7 +56,7 @@ def start_combine(args):
     if args.folder_loc is None:
         logging.warning(
             "Must have folder location. Please include --folder_loc='filepath/foldername'")
-        logging.warning("Example: --folder_loc='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
+        logging.warning("Example: --folder_loc='Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'")
         exit()
 
     path = args.folder_loc
@@ -76,7 +76,7 @@ def start_assign_id(args):
     if args.main_folder is None:
         logging.warning("Must have main folder location containing all processed cube folders. Please include"
                         " --main_folder='filepath'")
-        logging.warning("Example: --main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
+        logging.warning("Example: --main_folder='Example/test_data/Mosaic_Planes/'")
         exit()
 
     path = args.main_folder
@@ -95,7 +95,7 @@ def start_full_catalog(args):
     if args.main_folder is None:
         logging.warning("Must have main folder location containing all processed cube folders. \n"
                         "Please include --main_folder='filepath' \n"
-                        "Example: \n--main_folder='/Users/bs19aam/Documents/test_data/Mosaic_Planes/'")
+                        "Example: \n--main_folder='Example/Documents/test_data/Mosaic_Planes/'")
         exit()
 
     path = args.main_folder
@@ -115,9 +115,9 @@ def start_neighbors(args):
     if args.folder_one is None or args.folder_two is None or args.folder_three is None:
         logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
                         "--folder_two='filepath', and --folder_three='filepath' \n"
-                        "Example:\n--folder_one='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
-                        "--folder_two='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
-                        "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
+                        "Example:\n--folder_one='/Example/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
+                        "--folder_two='/Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
+                        "--folder_three='/Example/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
         exit()
 
     folder_one = args.folder_one
@@ -140,9 +140,9 @@ def start_plotting(args):
     if args.folder_one is None or args.folder_two is None or args.folder_three is None:
         logging.warning("Must have three folder locations.\nPlease include --folder_one='filepath', "
                         "--folder_two='filepath', and --folder_three='filepath' \n"
-                        "Example:\n--folder_one='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G279.5-0.5IFx/'\n"
-                        "--folder_two='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
-                        "--folder_three='/Users/bs19aam/Documents/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
+                        "Example:\n--folder_one='/Example/test_Data/Mosaic_Planes/G279.5-0.5IFx/'\n"
+                        "--folder_two='/Example/test_data/Mosaic_Planes/G282.5-0.5IFx/'\n"
+                        "--folder_three='/Example/test_data/Mosaic_Planes/G285.5-0.5IFx/'")
         exit()
 
     folder_one = args.folder_one

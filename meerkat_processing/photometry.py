@@ -35,10 +35,8 @@ def aperture_phot(path, channel_number):
     logging.info(f'Processing channel {channel_number + 1} photometry')
 
     phot_table = [aperture_photometry(
-        data_cube.channels[channel_number].data[:, :] - data_cube.background[channel_number].data[:, :],
-        apert, error=data_cube.rms[channel_number].data[:, :]) for apert in apertures]
-
-    logging.info()
+        data_cube.channels[0].data[:, :] - data_cube.background[0].data[:, :],
+        apert, error=data_cube.rms[0].data[:, :]) for apert in apertures]
 
     np.save(f'{data_cube.location}phot_table_chan' + '{:02d}'.format(channel_number + 1), phot_table,
             allow_pickle=True, fix_imports=True)
@@ -69,7 +67,7 @@ def process_photometry(path):
     logging.info(f'Does Phot exist: {phot_exist} ')
 
     if not phot_exist:
-        # Phot does not exist, so we are going to create one
+        # Phot does not exist, so we are going to create the photometry files
         pool = mp.Pool()
         func = partial(aperture_phot, path)
         pool.map(func, channels_to_process)

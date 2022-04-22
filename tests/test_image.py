@@ -1,32 +1,26 @@
 import models.image as image
 from unittest import TestCase
+from unittest.mock import patch, MagicMock
+import models
 
 
 class TestImage(TestCase):
-    multiple_channels = ['/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits',
-                         '/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan02.fits',
-                         '/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan03.fits'
-                         ]
-    multiple_backgrounds = ['/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01_bkg.fits',
-                         '/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan02_bkg.fits',
-                         '/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                         'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan03_bkg.fits'
-                         ]
-
-    one_channel = ['/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                      'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits']
-
-    one_background = ['/Users/bs19aam/Documents/test_data/Mosaic_Planes/'
-                      'G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01_bkg.fits']
 
     def test_get_channels(self):
-        cube_single = image.Image.get_channels(self, self.one_channel)
-        cube_multi = image.Image.get_channels(self, self.multiple_channels)
+        mock_multiple_files = ['file_one', 'file_two', 'file_three']
+        mock_single_file = 'file_one'
+        mock_cube=MagicMock()
+        mock_multiple_cubes=MagicMock()
+        mock_cube[0]='cube_data'
+        mock_multiple_cubes[0] = 'cube_dat1'
+        mock_multiple_cubes[1] = 'cube_data2'
+        mock_multiple_cubes[2] = 'cube_data3'
+
+        with patch.object(models.channel.Channel(), 'self, path', return_value=mock_cube):
+            cube_single = image.Image.get_channels(self, mock_single_file)
+
+        with patch('models.channel.Channel()', return_value=mock_multiple_cubes):
+            cube_multi = image.Image.get_channels(self, mock_multiple_files)
 
         self.assertIs(1, len(cube_single))
         self.assertIs(3, len(cube_multi))

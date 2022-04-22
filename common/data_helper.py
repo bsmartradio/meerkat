@@ -89,7 +89,6 @@ def find_channels(location):
     return channels
 
 
-# noinspection PyTypeChecker
 def make_table(shape, aegean=False, table_type=[]):
 
     if aegean and not 'id' in table_type.dtype.names:

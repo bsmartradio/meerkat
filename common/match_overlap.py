@@ -38,10 +38,10 @@ def match_duplicates(neighbor_sources, phot_tables, min_res):
             center_matched_index = neighbor_sources.center_left.overlap_index[0][0][nearest_point]
 
             # In the phot tables, fills in the ID to any point that has a match as well as the related cube field.
-            phot_tables[0]['overlap_id'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
+            phot_tables[0]['overlap'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
             phot_tables[0]['overlap_field'][neighbor_index] = phot_tables[1]['field'][center_matched_index]
 
-            phot_tables[1]['overlap_id'][center_matched_index] = phot_tables[0]['id'][neighbor_index]
+            phot_tables[1]['overlap'][center_matched_index] = phot_tables[0]['id'][neighbor_index]
             phot_tables[1]['overlap_field'][center_matched_index] = phot_tables[0]['field'][neighbor_index]
 
     # Right table fill
@@ -60,10 +60,10 @@ def match_duplicates(neighbor_sources, phot_tables, min_res):
             center_matched_index = neighbor_sources.center_right.overlap_index[0][0][nearest_point]
 
             # In the phot tables, fills in the ID to any point that has a match as well as the related cube field.
-            phot_tables[2]['overlap_id'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
+            phot_tables[2]['overlap'][neighbor_index] = phot_tables[1]['id'][center_matched_index]
             phot_tables[2]['overlap_field'][neighbor_index] = phot_tables[1]['field'][center_matched_index]
 
-            phot_tables[1]['overlap_id'][center_matched_index] = phot_tables[2]['id'][neighbor_index]
+            phot_tables[1]['overlap'][center_matched_index] = phot_tables[2]['id'][neighbor_index]
             phot_tables[1]['overlap_field'][center_matched_index] = phot_tables[2]['field'][neighbor_index]
 
     return neighbor_sources, phot_tables

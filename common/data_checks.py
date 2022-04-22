@@ -63,15 +63,15 @@ def process_channels_check(location, channels, total_channels, backgrounds_list,
                 check_values = np.isnan(channel_data[0][:, :]).all()
                 bck_file = [s for s in backgrounds_list if "chan" + "{:02d}".format(i + 1) + "_bkg" in s]
 
-                if not check_values and bck_file != " ":
+                if not check_values and bck_file:
                     existing_channels.append(i)
                     logging.info(f'Channel {i + 1} has values and valid background, will process photometry')
 
-                elif bck_file == " " and check_values:
+                elif not bck_file and check_values:
                     logging.warning(f'Missing background file for {i + 1} channel. Run auto_bane to make file.')
                     logging.warning(f"Skipping file {location} due to missing files")
 
-                elif bck_file != " " and check_values:
+                elif bck_file and check_values:
                     logging.warning(f'No values for {i + 1} channel')
 
                 else:

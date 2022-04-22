@@ -1,24 +1,21 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-
 from astropy.wcs import WCS
-
 import common.data_checks
 import common.data_helper as helper
-import models.image as image
 import numpy as np
 
 import common.vot_helper
 
 
 class TestChannel(TestCase):
-    location = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx'
-    name = '/Users/bs19aam/Documents/test_data/Mosaic_Planes/G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits'
+    location = 'Example/test_data/Mosaic_Planes/G282.5-0.5IFx'
+    name = 'Example/test_data/Mosaic_Planes/G282.5-0.5IFx/G282.5-0.5IFx_Mosaic_chan01.fits'
 
     def test_get_name(self):
         name = helper.get_name(self.location)
         self.assertEqual('G282.5-0.5IFx', name)
-        name = helper.get_name(self.location)
+        name = helper.get_name(self.location + '/')
         self.assertEqual('G282.5-0.5IFx', name)
 
     def test_find_backgrounds(self):
@@ -28,64 +25,65 @@ class TestChannel(TestCase):
 
         with patch('glob.glob', return_value=return_value):
             background_list = helper.find_backgrounds(self.location, background=True)
-            # rms_list = helper.find_backgrounds(self.location, rms=True)
 
-            # self.assertEqual(14, len(rms_list))
-            # for rms in rms_list:
-            #    self.assertIn('rms.fits', rms)
             self.assertEqual(14, len(background_list))
             for background in background_list:
                 self.assertIn('bkg.fits', background)
 
-
     def test_get_image(self):
+        mock_list = MagicMock()
+        mock_list[0].data = 'mock_fits_file'
+        mock_list[0].header = {'SIMPLE': True}
+        mock_list.close.return_value = None
 
-        image = helper.get_image(self.name)
-        self.assertIsNotNone(image)
-        self.assertIsNotNone(image[0])
-        self.assertIsNotNone(image[1])
-        self.assertTrue(image[1]['SIMPLE'])
+        with patch('astropy.io.fits.open', return_value=mock_list):
+            image, header = helper.get_image(self.name)
+            self.assertIsNotNone(image)
+            self.assertIsNotNone(header)
+            self.assertTrue(header['SIMPLE'])
+            self.assertTrue(mock_list.close.called)
+
 
     def test_unify_coords(self):
-        vot_location = common.vot_helper.get_vot_location(self.location)
-        name = helper.get_name(self.location)
-        vot = common.vot_helper.read_vot(vot_location + name + '_Mosaic_Mom0_comp.vot')
-        files = helper.find_channels(self.location)
-        channels = image.Image.get_channels(self, files[0])
-        w = WCS(channels[0].header, naxis=2)
-        positions = helper.unify_coords(vot, w)
+        mock_lon = MagicMock()
+        mock_lon.data = [200]
+        mock_lat = MagicMock()
+        mock_lat.data = [-5]
+        mock_vot = {'lon': mock_lon, 'lat': mock_lat}
+        mock_w = MagicMock()
+        mock_w.wcs_world2pix.return_value = [1, 2]
 
-        self.assertAlmostEqual(1331.4798803820217, positions[0][0])
-        self.assertAlmostEqual(3.670782204850184, positions[0][1])
-        self.assertEqual(8357, len(positions))
-        self.assertEqual(len(vot['id']), len(positions))
+        with patch('numpy.array', return_value=[4, 5]):
+            positions = helper.unify_coords(mock_vot, mock_w)
+
+            self.assertEquals([1, 2], positions)
+            self.assertTrue(mock_w.wcs_world2pix.called)
 
     def test_minmax_coord(self):
-        files = helper.find_channels(self.location)
-        channels = image.Image.get_channels(self, files[0])
-        min, max = helper.minmax_coord(channels[0].header)
+        mock_min_lon = MagicMock()
+        mock_min_lon.l.degree = 1
+        mock_max_lon = MagicMock()
+        mock_max_lon.l.degree = 100
+
+        with patch.object(WCS, 'pixel_to_world', side_effect=[mock_min_lon, mock_max_lon]):
+            min, max = helper.minmax_coord(None)
 
         self.assertLess(min, max)
-        self.assertGreaterEqual(min, 0)
-        self.assertLessEqual(min, 360)
-        self.assertGreaterEqual(max, 0)
-        self.assertLessEqual(max, 360)
 
     def test_find_channels(self):
-        channels = helper.find_channels(self.location)
+
+        return_value = ['_chan01.fits', '_chan02.fits', '_chan03.fits', '_chan04.fits', '_chan05.fits', '_chan06.fits',
+                        '_chan07.fits', '_chan08.fits', '_chan09.fits', '_chan10.fits', '_chan11.fits', '_chan12.fits',
+                        '_chan13.fits', '_chan14.fits']
+
+        with patch('glob.glob', return_value=return_value):
+            channels = helper.find_channels(self.location)
 
         self.assertIs(14, len(channels))
         for channel in channels:
             self.assertEqual('chan', channel[-11:-7])
             self.assertEqual('.fits', channel[-5:])
 
-    def test_load_neighbors(self):
-        names = ['G279.5-0.5IFx', 'G282.5-0.5IFx', 'G285.5-0.5IFx']
-        folder = '/Users/bs19aam/Documents/test_data/Mom0_comp_catalogs'
-        neighbors = common.vot_helper.load_neighbors(names, folder)
-
-        self.assertIsNotNone(neighbors)
-        self.assertIs(3, len(neighbors))
 
     def test_make_table(self):
         small_shape = 10
@@ -104,10 +102,4 @@ class TestChannel(TestCase):
         self.assertEquals(small_shape, len(small_table))
         self.assertEquals(large_shape, len(large_table))
 
-    def test_check_lists(self):
-        all_lists_check, back_list, channels_list = common.data_checks.check_required_files_exist(self.location)
-        self.assertIs(True, all_lists_check)
 
-        all_lists_check, back_list, channels_list = common.data_checks.check_required_files_exist('/Users/bs19aam/Documents/test_data'
-                                                                                   '/Mosaic_Planes/Empty')
-        self.assertIs(False, all_lists_check)

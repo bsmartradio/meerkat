@@ -2,6 +2,7 @@ import common.data_helper as helper
 import glob
 import numpy as np
 import logging
+import common.vot_helper
 
 
 # The purpose of this program is gather all the vot files for
@@ -15,7 +16,6 @@ import logging
 # Input required:
 # path: This is asking for the location where your data is stored. In our example, it wants test_data,
 # which contains the sub folders Mosaic_Planes and Mosaic_Mom0_catalogs.
-import common.vot_helper
 
 
 def get_vot_list(location, aegean=False):
@@ -50,12 +50,16 @@ def assign(num, table_name, aegean=False):
             id_present = True
 
     for i in range(shape):
+
         if aegean and not id_present:
+
             for j in range(len(table[0])):
                 labeled_table[i][j + 1] = table[i][j]
+
         else:
-            if len(table[i]) != len(labeled_table[i]):
+            if len(table[i]) == len(labeled_table[i]):
                 labeled_table[i] = table[i]
+
     for i in range(len(table)):
         labeled_table['id'][i] = i + num
 
@@ -82,18 +86,18 @@ def assign(num, table_name, aegean=False):
 
 
 def begin_assign(path):
-    vot_list = common.vot_helper.get_vot_list(path)
+    phot_list = get_vot_list(path)
 
     last_id = None
 
-    for i, vot_name in enumerate(vot_list):
+    for i, phot_name in enumerate(phot_list):
 
         if i == 0:
-            last_id = assign(0, vot_name)
+            last_id = assign(0, phot_name)
         else:
-            last_id = assign(last_id, vot_name)
+            last_id = assign(last_id, phot_name)
 
-        logging.info(f"The last ID assigned for {vot_name} is {last_id}")
+        logging.info(f"The last ID assigned for {phot_name} is {last_id}")
 
     vot_list = get_vot_list(path, aegean=True)
 

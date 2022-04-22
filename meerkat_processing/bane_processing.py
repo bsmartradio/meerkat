@@ -5,9 +5,8 @@ import common.data_checks as checks
 import os
 import common.data_helper as helper
 
-# This program looks for induvidual Mosaic Planes in a cube folder and runs the Bane background processing from the
-# Aegean data-reduction pipeline. Th
-
+# This program looks for individual Mosaic Planes in a cube folder and runs the Bane background processing from the
+# Aegean data-reduction pipeline.
 def run_bane(location, file):
     logging.info(f'File location {location + file}')
     cmd = ['BANE', location + file]

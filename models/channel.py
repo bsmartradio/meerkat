@@ -1,5 +1,6 @@
 import common.data_helper as helper
 import numpy as np
+import logging
 
 
 class Channel:
@@ -20,6 +21,9 @@ class Channel:
 
     @staticmethod
     def get_frequency(header):
-        frequency = header['OBSFREQ']
+        try:
+            frequency = header['OBSFREQ']
+            return frequency
 
-        return frequency
+        except KeyError:
+            logging.warning('Channel has no frequency value')

@@ -54,8 +54,11 @@ def correct_phot(phot):
 def begin_combine(path):
     data_cube = image.Image(path)
 
+    if path[-1] != '/':
+        path = path + '/'
+
     for i in range(14):
-        phot_table = common.phot_helper.load_phot_table(path + f'/phot_table_chan{i + 1:02d}.npy')
+        phot_table = common.phot_helper.load_phot_table(path + f'phot_table_chan{i + 1:02d}.npy')
         phot_table['aperture_sum'] = correct_phot(phot_table['aperture_sum'])
         if i == 0:
             shape = len(phot_table['aperture_sum'])
@@ -66,8 +69,6 @@ def begin_combine(path):
             full_table[f'chan{i + 1:02d}'] = phot_table['aperture_sum']
             full_table[f'chan{i + 1:02d}' + 'err'] = phot_table['aperture_sum_err']
 
-    if path[-1] != '/':
-        path = path + '/'
 
     full_table.write(f'{path + data_cube.folder_name}_full_table.vot', format='votable', overwrite=True)
     np.save(f'{path + data_cube.folder_name}_full_table', full_table, allow_pickle=True, fix_imports=True)
@@ -82,8 +83,11 @@ def begin_combine(path):
 
     for i in range(14):
         frequency_list[i] = data_cube.channels[i].frequency
+
     full_table['si_m'] = np.nan
+    # Fits the photometry points and calculates a spectral index
     full_table = si_fit(full_table, frequency_list)
+
     full_table.write(f'{path + data_cube.folder_name}_full_table_cut.vot', format='votable', overwrite=True)
     np.save(f'{path + data_cube.folder_name}_full_table_cut', full_table, allow_pickle=True, fix_imports=True)
     logging.info(f'Combined and RMS/Error cut photometry tables written to {path} as'
