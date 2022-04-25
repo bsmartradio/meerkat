@@ -4,7 +4,7 @@ Supporting programs for the creation of an SED catalog for a MeerKAT data cubes.
 These programs were developed in [Pycharm community edition.](https://www.jetbrains.com/pycharm/download/#section=mac)
 
 ### Programs required:
-- phython 3.7
+- python 3.7
 - [Aegean Processing Package](https://github.com/PaulHancock/Aegean)
 - astropy
 - photutils
