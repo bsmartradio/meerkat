@@ -21,4 +21,4 @@ class TestPhotHelper(TestCase):
             test_channel_list = phot_helper.get_chan_list(mock_location)
 
         self.assertIsNotNone(test_channel_list)
-        self.assertEquals(2, len(test_channel_list))
+        self.assertEqual(2, len(test_channel_list))

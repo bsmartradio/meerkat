@@ -27,5 +27,5 @@ class TestMatchOverlap(TestCase):
         neighbor_sources, phot_tables = common.match_overlap.match_duplicates(mock_neighbor_sources,
                                                                               mock_phot_tables, mock_min_res)
 
-        self.assertEquals(2.0, phot_tables[0]['overlap'][0])
-        self.assertEquals(0.0, phot_tables[0]['overlap'][9])
+        self.assertEqual(2.0, phot_tables[0]['overlap'][0])
+        self.assertEqual(0.0, phot_tables[0]['overlap'][9])

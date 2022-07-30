@@ -13,6 +13,6 @@ class TestBackgrounds(TestCase):
         with patch('common.data_helper.get_image', return_value=mock_image):
             background = Backgrounds(path)
 
-        self.assertEquals('testpath', background.path)
-        self.assertEquals(5, background.data)
-        self.assertEquals(10, background.header)
+        self.assertEqual('testpath', background.path)
+        self.assertEqual(5, background.data)
+        self.assertEqual(10, background.header)

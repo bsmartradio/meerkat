@@ -21,7 +21,7 @@ class TestChannel(TestCase):
             self.assertIsNotNone(vot)
             self.assertIsNotNone(vot.data)
             self.assertTrue(mock_vot_table.get_first_table.called)
-            self.assertEquals(mock_array.data, vot.data)
+            self.assertEqual(mock_array.data, vot.data)
 
     def test_get_vot_list(self):
         mock_vot_return = ['Mosaic_Mom0_comp1.vot', 'Mosaic_Mom0_comp2.vot']

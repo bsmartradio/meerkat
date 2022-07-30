@@ -31,8 +31,8 @@ class TestChecks(TestCase):
         with patch('glob.glob', return_value=mock_files):
             all_lists_check, back_list, channels_list = checks.check_required_files_exist(self.location)
             self.assertIs(True, all_lists_check)
-            self.assertEquals(['1', '2', '3'], back_list)
-            self.assertEquals(['1', '2', '3'], channels_list)
+            self.assertEqual(['1', '2', '3'], back_list)
+            self.assertEqual(['1', '2', '3'], channels_list)
 
     def test_check_required_files_do_not_exist(self):
         with patch('glob.glob', return_value=[]):

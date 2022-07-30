@@ -36,7 +36,7 @@ class TestChannel(TestCase):
         with patch('astropy.io.fits.open', return_value=mock_list):
             image, header = helper.get_image(self.name)
             self.assertIsNotNone(image)
-            self.assertEquals('mock_fits_file', image)
+            self.assertEqual('mock_fits_file', image)
             self.assertIsNotNone(header)
             self.assertTrue(header['SIMPLE'])
             self.assertTrue(mock_list.close.called)
@@ -53,7 +53,7 @@ class TestChannel(TestCase):
         with patch('numpy.array', return_value=[4, 5]):
             positions = helper.unify_coords(mock_vot, mock_w)
 
-            self.assertEquals([1, 2], positions)
+            self.assertEqual([1, 2], positions)
             self.assertTrue(mock_w.wcs_world2pix.called)
 
     def test_minmax_coord(self):
@@ -88,7 +88,7 @@ class TestChannel(TestCase):
 
         table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
 
-        self.assertEquals(shape, len(table_aegean))
+        self.assertEqual(shape, len(table_aegean))
         self.assertIn('id', table_aegean.dtype.names)
 
     def test_make_table(self):
@@ -98,7 +98,7 @@ class TestChannel(TestCase):
 
         table_aegean = helper.make_table(shape, aegean=True, table_type=mock_vot)
 
-        self.assertEquals(shape, len(table_aegean))
+        self.assertEqual(shape, len(table_aegean))
         self.assertIn('id', table_aegean.dtype.names)
 
     def test_make_table_aegean_with_id(self):
@@ -106,5 +106,5 @@ class TestChannel(TestCase):
 
         table = helper.make_table(shape)
 
-        self.assertEquals(shape, len(table))
-        self.assertEquals(38, len(table.dtype))
+        self.assertEqual(shape, len(table))
+        self.assertEqual(38, len(table.dtype))

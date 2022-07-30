@@ -19,6 +19,7 @@ class TestChannel(TestCase):
 
         self.assertFalse(isinstance(frequency, float))
 
+    # TODO Fix this test!
     def test_get_frequency_missing_key(self):
         mock_channel = MagicMock()
         mock_channel.header = {'TEST': 12345.534}

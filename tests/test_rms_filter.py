@@ -20,7 +20,7 @@ class TestRmsFilter(TestCase):
             with patch('numpy.nanmean', return_value=.3):
                 total_cut, full_table = rms_cut(mock_data_cube, mock_full_table)
 
-        self.assertEquals(4.6, full_table['chan01'][0])
+        self.assertEqual(4.6, full_table['chan01'][0])
         self.assertTrue(np.isnan(full_table['chan02'][0]))
-        self.assertEquals(10, total_cut[1])
-        self.assertEquals(14, len(total_cut))
+        self.assertEqual(10, total_cut[1])
+        self.assertEqual(14, len(total_cut))
